@@ -1,6 +1,6 @@
-# 🌐 Cyber-Physical Threat Intelligence & Automated Incident Response Framework for Critical Cloud Infrastructure
+# 🛡️ Aegis-Sea: A Cyber-Physical Threat Intelligence & Automated Incident Response Framework for Critical Cloud Infrastructure
 
-[![Capstone Project](https://img.shields.io/badge/Project-Cybersecurity%20Capstone-blue.svg)](https://github.com/R4Y3D/gods-eye-view)
+[![Capstone Project](https://img.shields.io/badge/Project-Aegis--Sea-blue.svg)](https://github.com/R4Y3D/aegis-sea)
 [![Institution](https://img.shields.io/badge/Institution-Fordham%20University-maroon.svg)](https://www.fordham.edu/)
 [![Target](https://img.shields.io/badge/Target-IEEE%20Format%20Research%20Paper-darkgreen.svg)](#empirical-validation--expected-outcomes)
 [![Upstream](https://img.shields.io/badge/Forked%20From-God's%20Eye%20View-orange.svg)](https://github.com/bilawalsidhu/gods-eye-view)
@@ -233,8 +233,8 @@ The research will evaluate the framework using empirical metrics to be documente
 
 ### 1. Clone the Fork
 ```bash
-git clone https://github.com/R4Y3D/gods-eye-view.git
-cd gods-eye-view
+git clone https://github.com/R4Y3D/aegis-sea.git
+cd aegis-sea
 ```
 
 ### 2. Launch the 3D Geospatial Frontend
