@@ -276,7 +276,7 @@ $$S_{\text{anchor}}(v) = \begin{cases}
 
 #### 6. AIS Transponder Blackout ($S_{\text{dark}}$) — Weight: $w_d = 5$
 Penalizes transponder silence when a vessel was last observed inside or heading toward an alert zone:
-$$S_{\text{dark}}(v, t) = \min\left(1.0, \; \frac{t - t_{\text{last\_ais}}(v)}{\tau_{\text{dark}}}\right)$$
+$$S_{\text{dark}}(v, t) = \min\left(1.0, \; \frac{t - t_{\text{last}}(v)}{\tau_{\text{dark}}}\right)$$
 *Where $\tau_{\text{dark}} = 1{,}800\text{ s}$ (30 minutes).*
 
 ### Threshold Policy & Response Matrix
@@ -400,9 +400,9 @@ Every benchmark run generates a structured evaluation summary:
 
 $$\text{Precision} = \frac{TP}{TP + FP}, \quad \text{Recall} = \frac{TP}{TP + FN}, \quad F_1 = 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}$$
 
-$$\text{Detection Latency} = t_{\text{first\_alert}} - t_{\text{threat\_onset}}$$
+$$\Delta t_{\text{detection}} = t_{\text{alert}} - t_{\text{onset}}$$
 
-$$\text{Mitigation Lead Time} = t_{\text{physical\_intercept}} - t_{\text{first\_alert}}$$
+$$\Delta t_{\text{mitigation}} = t_{\text{intercept}} - t_{\text{alert}}$$
 
 | Empirical Metric | Benchmark Target | Academic Significance |
 |:---|:---:|:---|
@@ -431,22 +431,37 @@ The test suite automatically generates publication-grade figures saved to `resul
 Designed for execution by a working professional around academic milestones (CISC 6090: Capstone in Cybersecurity):
 
 ```mermaid
-gantt
-    title Aegis-Sea Capstone Execution Timeline
-    dateFormat YYYY-MM-DD
-    section Academic Milestones
-    Related Work Submission     :milestone, m1, 2026-10-17, 0d
-    Progress Report Submission  :milestone, m2, 2026-10-31, 0d
-    Draft Report Submission     :milestone, m3, 2026-12-03, 0d
-    Final Presentation          :milestone, m4, 2026-12-05, 0d
-    
-    section Technical Phases
-    Phase 0: Scaffolding & Indexing   :active, p0, 2026-10-10, 2026-10-17
-    Phase 1: Core Engine & Ingestion   :p1, 2026-10-18, 2026-10-26
-    Phase 2: Simulation & Response     :p2, 2026-10-27, 2026-11-09
-    Phase 3: Benchmarks & Paper        :p3, 2026-11-10, 2026-12-02
-    Phase 4: Presentation & Demo       :p4, 2026-12-03, 2026-12-05
+flowchart LR
+    subgraph S1["Oct 10 – Oct 17"]
+        P0["<b>Phase 0: Scaffolding</b><br/>R-tree Spatial Index & Literature"]
+    end
+
+    subgraph S2["Oct 18 – Oct 26"]
+        P1["<b>Phase 1: Threat Engine</b><br/>Scoring Algorithm & Telemetry Tap"]
+    end
+
+    subgraph S3["Oct 27 – Nov 09"]
+        P2["<b>Phase 2: Simulation Harness</b><br/>10 Scenarios & Webhook Pipeline"]
+    end
+
+    subgraph S4["Nov 10 – Dec 02"]
+        P3["<b>Phase 3: Empirical Benchmarks</b><br/>Evaluation Suite & IEEE Paper"]
+    end
+
+    subgraph S5["Dec 03 – Dec 05"]
+        P4["<b>Phase 4: Capstone Defense</b><br/>Live Demo Video & Presentation"]
+    end
+
+    P0 --> P1 --> P2 --> P3 --> P4
 ```
+
+| Phase | Time Horizon | Key Focus & Technical Deliverables | Fordham Academic Milestone |
+| :---: | :---: | :--- | :---: |
+| **Phase 0** | **Oct 10 – Oct 17** | Environment setup, R-tree cable indexing (`shapely`/`rtree`), literature review | **Related Work (Oct 17)** |
+| **Phase 1** | **Oct 18 – Oct 26** | 6-factor composite scoring engine, `/api/vessels` polling tap, Cesium threat HUD | *Core Engine Verification* |
+| **Phase 2** | **Oct 27 – Nov 09** | Deterministic simulation harness, 10 benchmark scenarios, SOAR webhook dispatcher | **Progress Report (Oct 31)** |
+| **Phase 3** | **Nov 10 – Dec 02** | Automated benchmark runs, ROC/PR curves, complete IEEE conference paper | **Draft Report (Dec 03)** |
+| **Phase 4** | **Dec 03 – Dec 05** | High-definition screencast video demo, defense slide deck | **Final Presentation (Dec 05)** |
 
 ### Phase 0: Scaffolding & Geospatial Indexing `Oct 10 – Oct 17`
 - [x] Establish and verify local God's Eye View runtime (Node.js 24 LTS + Vite + Cesium).
