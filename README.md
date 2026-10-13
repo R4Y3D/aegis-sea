@@ -466,8 +466,8 @@ flowchart LR
 ### Phase 0: Scaffolding & Geospatial Indexing `Oct 10 – Oct 17`
 - [x] Establish and verify local God's Eye View runtime (Node.js 24 LTS + Vite + Cesium).
 - [x] Inspect and document live AISStream WebSocket and TeleGeography cable layers.
-- [ ] Initialize Python environment (`aegis-engine/`) with `shapely`, `rtree`, `fastapi`, and `pydantic`.
-- [ ] Build `CableCorridorIndex` with R-tree spatial indexing over all 712 subsea cable geometries.
+- [x] Initialize Python environment (`aegis-engine/`) with `shapely`, `rtree`, `fastapi`, and `pydantic`.
+- [x] Build `CableCorridorIndex` with R-tree spatial indexing over all 712 subsea cable geometries.
 - [ ] Complete and submit the **Related Work** literature review document.
 
 ### Phase 1: Threat Scoring Core & API Ingestion `Oct 18 – Oct 26`
