@@ -111,6 +111,78 @@ Aegis-Sea combines a rich interactive 3D frontend with a fast, isolated Python t
 
 ---
 
+## 🗺️ Project Roadmap & Milestones
+
+Designed for execution across the Fall 2026 academic semester:
+
+```mermaid
+flowchart LR
+    subgraph S1["Oct 10 – Oct 17"]
+        P0["<b>Phase 0: Scaffolding</b><br/>R-tree Cable Index & Environment"]
+    end
+
+    subgraph S2["Oct 18 – Oct 26"]
+        P1["<b>Phase 1: Threat Engine</b><br/>Scoring Algorithm & Telemetry Tap"]
+    end
+
+    subgraph S3["Oct 27 – Nov 09"]
+        P2["<b>Phase 2: Simulation Harness</b><br/>Benchmark Scenarios & Alerts"]
+    end
+
+    subgraph S4["Nov 10 – Dec 02"]
+        P3["<b>Phase 3: Benchmarks & Paper</b><br/>Evaluation Suite & Research Paper"]
+    end
+
+    subgraph S5["Dec 03 – Dec 05"]
+        P4["<b>Phase 4: Capstone Defense</b><br/>Live Demo Video & Presentation"]
+    end
+
+    P0 --> P1 --> P2 --> P3 --> P4
+```
+
+| Phase | Time Horizon | Status | Key Focus & Technical Deliverables | Academic Milestone |
+| :---: | :---: | :---: | :--- | :---: |
+| **Phase 0** | **Oct 10 – Oct 17** | ✅ **Complete** | Environment setup, R-tree cable indexing (`shapely`/`rtree`), literature review | **Related Work (Oct 17)** |
+| **Phase 1** | **Oct 18 – Oct 26** | 🟡 **In Progress** | 6-factor composite scoring engine, `/api/vessels` polling tap, Cesium threat HUD | *Core Engine Verification* |
+| **Phase 2** | **Oct 27 – Nov 09** | ⏳ Upcoming | Deterministic simulation harness, benchmark scenarios, SOAR webhook dispatcher | **Progress Report (Oct 31)** |
+| **Phase 3** | **Nov 10 – Dec 02** | ⏳ Upcoming | Automated benchmark runs, ROC/PR curves, complete research paper | **Draft Report (Dec 03)** |
+| **Phase 4** | **Dec 03 – Dec 05** | ⏳ Upcoming | High-definition video demo, defense slide deck | **Final Presentation (Dec 05)** |
+
+### Phase 0: Scaffolding & Geospatial Indexing `Oct 10 – Oct 17`
+- [x] Establish and verify local God's Eye View runtime (Node.js 24 LTS + Vite + Cesium).
+- [x] Inspect and document live AISStream WebSocket and TeleGeography cable layers.
+- [x] Initialize Python environment (`aegis-engine/`) with `shapely`, `rtree`, `fastapi`, and `pydantic`.
+- [x] Build `CableCorridorIndex` with R-tree spatial indexing over all 712 subsea cable geometries.
+- [x] Compile reference literature library (15 academic papers) and mapping matrix.
+- [ ] Finalize and submit the **Related Work** literature review document.
+
+### Phase 1: Threat Scoring Core & API Ingestion `Oct 18 – Oct 26` *(Current Phase)*
+- [ ] Build `AISPoller` client polling `/api/vessels` and caching kinematic states in `VesselState`.
+- [ ] Implement mathematical formulations for all 6 scoring factors in `aegis.scorer`.
+- [ ] Construct FastAPI service exposing `GET /api/threats` and `GET /api/threats/{mmsi}`.
+- [ ] Integrate Node.js reverse proxy (`server/providers/aegis.js`) and Cesium frontend threat layer.
+
+### Phase 2: Simulation Harness & Automated Response `Oct 27 – Nov 9`
+- [ ] Develop deterministic simulation engine (`aegis.simulation.harness`).
+- [ ] Author JSON scenario configurations for all benchmark scenarios (including *Yi Peng 3*).
+- [ ] Implement `AlertDispatcher` with SOAR JSON webhook emission.
+- [ ] Build standalone mock webhook receiver and incident log audit recorder.
+- [ ] Complete and submit the **Progress Report** (due Oct 31).
+
+### Phase 3: Empirical Benchmarking & Research Paper Authoring `Nov 10 – Dec 3`
+- [ ] Execute automated benchmark runs across scenarios and naive baselines.
+- [ ] Generate all evaluation charts, confusion matrices, and ROC curves using `matplotlib` / `seaborn`.
+- [ ] Author the complete research paper.
+- [ ] Format and compile final document with all figures and academic citations.
+- [ ] Submit final **Draft Report** (due Dec 3).
+
+### Phase 4: Final Demonstration & Presentation `Dec 3 – Dec 5`
+- [ ] Record a high-definition screencast demonstration of an anchor-drag incident triggering SDN rerouting.
+- [ ] Prepare slide presentation covering threat landscape, architecture, model, and metrics.
+- [ ] Deliver **Final Capstone Defense & Presentation** (Dec 5).
+
+---
+
 ## 🚀 Quick Start & Local Setup
 
 ### Prerequisites
