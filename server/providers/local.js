@@ -26,6 +26,7 @@ import { weatherProxy } from './weather.js';
 import { firePerimetersProxy } from './firePerimeters.js';
 import { cycloneProxy } from './cyclones.js';
 import { windProxy } from './wind.js';
+import { aegisProxy } from './aegis.js';
 
 /**
  * Construct the local provider plugins in their established order.
@@ -60,6 +61,7 @@ function localProviderPlugins({ realtime } = {}) {
     cycloneProxy(),
     mapillaryProxy(),
     firePerimetersProxy(),
+    aegisProxy(),
     keySetupEndpoint(),
   ];
 }
@@ -106,3 +108,4 @@ export { validMilitaryInstallationBox } from './military-installations/query.js'
 export { militaryInstallationFailureReason } from './military-installations/query.js';
 export { validRegionalPoint } from './regional/query.js';
 export { regionalBriefHasAnySource } from './regional/briefing.js';
+export { aegisProxy } from './aegis.js';

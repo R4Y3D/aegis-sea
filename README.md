@@ -178,8 +178,8 @@ flowchart LR
 | Phase | Time Horizon | Status | Key Focus & Technical Deliverables | Academic Milestone |
 | :---: | :---: | :---: | :--- | :---: |
 | **Phase 0** | **Oct 10 – Oct 17** | ✅ **Complete** | Environment setup, R-tree cable indexing (`shapely`/`rtree`), literature review | **Related Work (Oct 17)** |
-| **Phase 1** | **Oct 18 – Oct 26** | 🟡 **In Progress** | Formalize Attacker Model, build Telemetry Trust Layer & scoring engine in `aegis-engine` | *Core Engine Verification* |
-| **Phase 2** | **Oct 27 – Nov 09** | ⏳ Upcoming | Adversarial **Red Team Simulation Testbed** (injecting spoofed tracks, ghost ships, dark approaches) | **Progress Report (Oct 31)** |
+| **Phase 1** | **Oct 18 – Oct 26** | ✅ **Complete** | Formalize Attacker Model, build Telemetry Trust Layer & scoring engine in `aegis-engine` | *Core Engine Verification* |
+| **Phase 2** | **Oct 27 – Nov 09** | 🟡 **In Progress** | Adversarial **Red Team Simulation Testbed** (injecting spoofed tracks, ghost ships, dark approaches) | **Progress Report (Oct 31)** |
 | **Phase 3** | **Nov 10 – Dec 02** | ⏳ Upcoming | Benchmark **Naive Detectors vs. Aegis-Sea Trust-Aware Detector** under spoofing; Research Paper | **Draft Report (Dec 03)** |
 | **Phase 4** | **Dec 03 – Dec 05** | ⏳ Upcoming | High-definition screencast demo video, defense slide deck | **Final Presentation (Dec 05)** |
 
@@ -189,20 +189,23 @@ flowchart LR
 - [x] Initialize Python environment (`aegis-engine/`) with `shapely`, `rtree`, `fastapi`, and `pydantic`.
 - [x] Build `CableCorridorIndex` with R-tree spatial indexing over all 712 subsea cable geometries.
 - [x] Compile reference literature library (15 academic papers) and mapping matrix.
-- [ ] Finalize and submit the **Related Work** literature review document.
+- [x] Finalize and submit the **Related Work** literature review document.
 
-### Phase 1: Threat Scoring Core & Attacker Model `Oct 18 – Oct 26` *(Current Phase)*
-- [ ] Formalize Attacker Model specifications (spoofing capabilities, blackout tactics, ghost ship decoys).
-- [ ] Build `AISPoller` client polling `/api/vessels` with caching and telemetry sanity filters.
-- [ ] Implement Telemetry Trust Layer and 6-factor scoring engine in `aegis.scorer`.
-- [ ] Construct FastAPI service exposing `GET /api/threats` and `GET /api/threats/{mmsi}`.
-- [ ] Integrate Node.js reverse proxy (`server/providers/aegis.js`) and Cesium frontend threat layer.
+### Phase 1: Threat Scoring Core & Attacker Model `Oct 18 – Oct 26`
+- [x] Formalize Attacker Model specifications (spoofing capabilities, blackout tactics, ghost ship decoys).
+- [x] Build `AISPoller` client polling `/api/vessels` with in-memory ring-buffer caching and kinematic filters.
+- [x] Implement Telemetry Trust Layer and 6-factor scoring engine in `aegis.scorer`.
+- [x] Construct FastAPI service exposing `GET /api/threats`, `GET /api/threats/{mmsi}`, and `POST /api/evaluate`.
+- [x] Integrate Node.js reverse proxy (`server/providers/aegis.js`) to seamlessly route `/api/threats`.
+- [x] Achieve 100% test pass rate across 29 automated unit and API integration tests.
 
-### Phase 2: Red Team Simulation Testbed & Automated Response `Oct 27 – Nov 9`
-- [ ] Build adversarial **Red Team simulation testbed** (`aegis.simulation.harness`).
-- [ ] Author test scenarios injecting spoofed AIS jumps, dark vessel maneuvers, and ghost ship decoys.
+### Phase 2: Red Team Simulation Testbed & Visual Threat Layer `Oct 27 – Nov 9` *(In Progress)*
+- [x] Build adversarial **Red Team simulation testbed** (`aegis.simulation`) and CLI runner (`run_simulation.py`).
+- [x] Author test scenarios injecting spoofed GPS jumps, Baltic Sea anchor drag sabotage (*Yi Peng 3* profile), and phantom ghost ship decoys.
+- [x] Benchmark baseline naive geofencing (33.3% accuracy) against Aegis-Sea trust layer (100% accuracy) with documented results (`docs/SIMULATION_RESULTS.md`).
+- [x] Verify 34 automated unit, API, and simulation tests passing across the Python engine.
+- [ ] Connect visual threat halos and tactical alert banner to the 3D Cesium globe in God's Eye View.
 - [ ] Implement `AlertDispatcher` with SOAR JSON webhook emission.
-- [ ] Build mock webhook receiver and simulated SDN fast-failover controller.
 - [ ] Complete and submit the **Progress Report** (due Oct 31).
 
 ### Phase 3: Resilient Benchmarking & Research Paper Authoring `Nov 10 – Dec 3`
