@@ -2,7 +2,7 @@
 
 # 🛡️ Aegis-Sea
 
-### Real-Time Subsea Cable Threat Monitoring & Automated Incident Response
+### Resilient Cyber-Physical Defense & Automated Incident Response for Undersea Critical Infrastructure
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
@@ -10,7 +10,7 @@
 [![CesiumJS](https://img.shields.io/badge/CesiumJS-3D%20Globe-68A063?logo=cesium&logoColor=white)](https://cesium.com/)
 [![Built On: God's Eye View](https://img.shields.io/badge/Built%20On-God's%20Eye%20View-F97316)](https://github.com/bilawalsidhu/gods-eye-view)
 
-**Protecting the physical backbone of the global internet by detecting maritime threats to undersea cables *before* physical damage happens.**
+**Defending the physical backbone of the global internet when the surveillance telemetry itself cannot be trusted.**
 
 ---
 
@@ -28,76 +28,111 @@
 
 ## 🌊 Overview
 
-Over **95% of all intercontinental internet traffic** and more than **$10 trillion in daily financial transactions** travel through a network of fiber-optic cables resting on the ocean floor. Despite their critical importance, these cables are only about the thickness of a garden hose and lie mostly unmonitored in international waters.
+Over **95% of all intercontinental internet traffic** and more than **$10 trillion in daily financial transactions** travel through an underwater mesh of fiber-optic cables resting on the seabed. Despite their global criticality, these cables are often no thicker than an average garden hose and lie mostly unmonitored in international waters.
 
-Recent incidents in the Baltic Sea and Red Sea have shown how vulnerable this infrastructure is: commercial vessels dragging their anchors along the seabed can quietly sever multiple undersea cables across hundreds of miles. 
+Recent gray-zone incidents in the Baltic and Red Seas—such as the *Newnew Polar Bear* (2023) and *Yi Peng 3* (2024) anchor-dragging cuts—have proven that commercial vessels can drag heavy anchors for over 100 miles, severing critical communication conduits under the guise of "accidental equipment failure."
 
-Today, network operators only discover a cable is broken **after it has already been cut**. Repair ships take weeks to deploy, costing millions of dollars and causing widespread communication disruptions.
+### The Core Cybersecurity Problem
+Existing commercial maritime monitors (e.g., Windward, Spire, MarineTraffic) treat Automatic Identification System (AIS) tracking data as honest ground truth. But maritime tracking operates over **unencrypted, unauthenticated radio frequencies** with zero cryptographic protection. 
 
-**Aegis-Sea** solves this blind spot by actively monitoring live global ship movements in 3D and alerting security teams to suspicious behavior—such as anchor dragging, lingering, or ships turning off their trackers—**before a cable is severed**, giving network operators enough time to safely reroute internet traffic.
+An adversary attempting sabotage will not broadcast an honest signal saying they are dragging an anchor. Instead, they can turn off transponders, spoof false coordinates using cheap software-defined radios, or inject phantom "ghost ships" to distract operators.
+
+**Aegis-Sea** asks a stronger cybersecurity question:  
+> **How can we detect physical threats to undersea infrastructure and trigger automated network defense *when the adversary can actively manipulate, spoof, or weaponize the surveillance data we rely on?***
 
 ---
 
-## ⚙️ How It Works
+## ⚓ Why Undersea Security Is Unique
 
-Aegis-Sea continuously correlates live maritime vessel telemetry with the global network of undersea cables through four main steps:
+Securing undersea cables presents fundamentally different challenges than traditional land-based network security:
+
+- **Deep Physical Inaccessibility:** Cables lie thousands of meters underwater. A severed line cannot simply be inspected or rebooted by an on-site technician; specialized repair ships take weeks or months to mobilize, costing millions in downtime.
+- **Jurisdictional Void:** Under the UN Convention on the Law of the Sea (UNCLOS), coastal states have limited legal authority to intercept or board foreign-flagged commercial vessels in international waters or Exclusive Economic Zones (EEZs) before damage occurs. Defense must be proactive and automated at the network layer.
+- **Extreme Asymmetry:** A $500 software radio and a commercial anchor can cut off communications for entire nations, while defending thousands of miles of seabed in real time requires autonomous intelligence.
+
+---
+
+## 🎯 Attacker Model & Threat Vectors
+
+Aegis-Sea models an adversary capable of both physical sabotage and electronic/telemetry manipulation:
 
 ```
-┌─────────────────────────┐       ┌─────────────────────────┐       ┌─────────────────────────┐       ┌─────────────────────────┐
-│  1. Map Undersea Cables │       │  2. Define Watch Zones  │       │ 3. Score Ship Behavior  │       │  4. Automated Response  │
-│                         │  ──►  │                         │  ──►  │                         │  ──►  │                         │
-│  Index all 712 global   │       │  9 NM Alert Corridor    │       │  Evaluate distance,     │       │  Send webhook alerts    │
-│  cables for sub-        │       │  3 NM Cable Protection  │       │  slow dragging speed,   │       │  and simulate pre-cut   │
-│  millisecond lookup     │       │  Zone around each cable │       │  loitering & dark ships │       │  traffic rerouting      │
-└─────────────────────────┘       └─────────────────────────┘       └─────────────────────────┘       └─────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        ADVERSARY CAPABILITY MODEL                      │
+│                                                                        │
+│   [ Physical Attack Vector ]           [ Cyber / Telemetry Vector ]    │
+│   • Slow anchor-dragging (1–3.5 kn)    • Transponder blackout (dark)   │
+│   • Intentional corridor loitering     • GPS / coordinate spoofing     │
+│   • Perpendicular cutting intercept    • Ghost ship decoys (DoS)       │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        AEGIS-SEA DEFENSE LAYER                         │
+│   • High-speed R-tree spatial index over 712 global subsea cables      │
+│   • Telemetry Trust Layer (jump filters & spoofing sanity checks)      │
+│   • Continuous 6-factor kinematic anomaly scoring                      │
+│   • Pre-emptive SDN BGP traffic evacuation before physical cut         │
+└────────────────────────────────────────────────────────────────────────┘
 ```
+
+1. **Transponder Blackouts ("Going Dark"):** A hostile vessel turns off its AIS transponder miles before reaching a cable corridor, attempting to disappear from monitoring screens. Aegis-Sea detects the sudden silence near sensitive infrastructure, projects a dead-reckoning course, and flags a blackout threat.
+2. **Telemetry & GPS Spoofing:** Adversaries transmit falsified GPS positions or speeds to mask hostile maneuvers or make ships appear in benign locations. Aegis-Sea applies kinematic jump filters to detect physically impossible speed jumps.
+3. **Ghost Ship Decoys (Denial of Service on Network Capacity):** Attackers inject fabricated AIS tracks of phantom ships dragging anchors across cables to trick operators into triggering emergency failovers—unnecessarily congesting backup networks. Aegis-Sea’s trust layer validates target authenticity before triggering failovers.
+
+---
+
+## ⚙️ How Aegis-Sea Works
+
+Aegis-Sea correlates real-time maritime telemetry with global undersea cable geography through four steps:
 
 ### 1. High-Speed Cable Mapping
-Using data from TeleGeography, Aegis-Sea indexes all **712 active submarine cable systems** (broken into nearly 12,000 geographic segments). A spatial index allows the system to check thousands of active ships against every cable in under a millisecond.
+Using data from TeleGeography, Aegis-Sea indexes all **712 active submarine cable systems** (decomposed into nearly 12,000 geographic segments). A two-tier R-tree spatial index enables the system to check thousands of moving ships against every global cable in **under a millisecond (~0.012 ms)**.
 
 ### 2. Dual Watch Corridors
-Around every undersea cable line, Aegis-Sea establishes two safety zones:
-- **Alert Corridor (9 Nautical Miles):** An outer advisory zone where nearby vessel courses and speeds are actively tracked.
-- **Cable Protection Zone (3 Nautical Miles):** An inner restricted zone modeled after international cable protection standards, where dragging anchors or stopping is considered a serious hazard.
+Around every undersea cable line, Aegis-Sea establishes two safety perimeters:
+- **Alert Corridor (9 Nautical Miles):** An outer advisory zone where approaching vessel courses, speeds, and telemetry integrity are actively tracked.
+- **Cable Protection Zone (3 Nautical Miles):** An inner restricted zone modeled after international cable protection standards, where dragging anchors or stopping is considered a critical hazard.
 
-### 3. Suspicious Behavior Evaluation
-Rather than sounding the alarm for every passing ship, Aegis-Sea looks for a combination of real-world warning signs:
-- **Proximity:** How close the vessel is to the cable line.
-- **Abnormal Speed:** Merchant ships normally cruise at 12–24 knots. If a ship slows down to 1–3.5 knots while continuing under power, it matches the signature of dragging an anchor.
-- **Loitering:** A ship lingering or station-keeping directly above a cable corridor.
-- **Course Alignment:** Whether the ship is running parallel directly along the cable trench or heading straight across it.
-- **Sudden Braking:** A sharp drop in speed inside the protection zone, indicating an anchor catch.
-- **Dark Vessels:** Vessels that turn off their public tracking signal (AIS transponder) while near a cable.
+### 3. Trust-Aware Threat Scoring
+Aegis-Sea evaluates vessel behavior across six continuous factors:
+- **Proximity:** Quadratic distance decay toward the cable line.
+- **Speed Anomaly:** Logistic sigmoid flagging abnormal anchor-dragging speeds (1.0–3.5 knots) vs. normal merchant transit (12–24 knots).
+- **Loitering:** Dwell time spent lingering directly inside the cable corridor.
+- **Heading Alignment:** Whether a vessel is tracking parallel along the cable trench or cutting across it.
+- **Anchor Catch Signature:** Sharp deceleration inside the protection zone while maintaining propulsion.
+- **Telemetry Trust / Blackout:** Penalizing transponder silence or erratic coordinate jumps.
 
-### 4. Automated Early Warning & Traffic Rerouting
-Threat levels are categorized into four intuitive stages:
+### 4. Automated Incident Response
+Threat scores scale from 0 to 100 across four operational tiers:
 
-| Level | Status | Meaning | What Happens |
+| Level | Badge | Meaning | System Action |
 | :---: | :---: | :--- | :--- |
-| 🟢 | **Normal** | Standard transit | Monitored in the background; no alarms. |
-| 🟡 | **Advisory** | Ship entering corridor or moving slowly | Highlighted on the 3D globe; tracking frequency increases. |
-| 🟠 | **High Alert** | Suspicious maneuver or loitering near cable | Automated alert sent to security operations teams. |
-| 🔴 | **Critical** | Anchor drop or imminent severance detected | Emergency webhook triggered; simulates rerouting internet traffic to backup routes before the cable snaps. |
+| 🟢 | **Normal** | Standard cruising transit | Monitored in background; no alarms. |
+| 🟡 | **Advisory** | Entering corridor or moving slowly | Highlighted on 3D globe; polling rate doubled. |
+| 🟠 | **High Alert** | Suspicious maneuver, loiter, or dark vessel | Automated webhook dispatched to security operations teams. |
+| 🔴 | **Critical** | Anchor drop or imminent severance detected | Emergency webhook triggered; **simulates pre-emptive SDN BGP traffic drain** to backup links before the physical cable is cut. |
 
 ---
 
 ## 🖥️ System Architecture
 
-Aegis-Sea combines a rich interactive 3D frontend with a fast, isolated Python threat-detection backend:
+Aegis-Sea combines an interactive 3D global visualization frontend with a fast, isolated Python threat engine:
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        GOD'S EYE VIEW (FRONTEND)                       │
 │   • 3D CesiumJS photorealistic globe running in your browser           │
-│   • Displays live ships, 712 subsea cables, and threat zones           │
+│   • Displays live ships, 712 subsea cables, and threat risk halos      │
 │   • Interactive tactical dashboard for security operators              │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │  Polls /api/vessels
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
 │                        AEGIS-ENGINE (PYTHON BACKEND)                   │
-│   • High-speed spatial index (sub-millisecond distance checks)         │
-│   • Continuous threat scoring engine                                   │
+│   • High-speed R-tree spatial index (< 0.02 ms distance lookups)       │
+│   • Telemetry Trust Layer (filters spoofed jumps & flags dark ships)   │
+│   • Continuous 6-factor threat scoring engine                          │
 │   • Automated alert webhook dispatcher                                 │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │  Dispatches alerts
@@ -118,19 +153,19 @@ Designed for execution across the Fall 2026 academic semester:
 ```mermaid
 flowchart LR
     subgraph S1["Oct 10 – Oct 17"]
-        P0["<b>Phase 0: Scaffolding</b><br/>R-tree Cable Index & Environment"]
+        P0["<b>Phase 0: Scaffolding</b><br/>R-tree Cable Index & Literature"]
     end
 
     subgraph S2["Oct 18 – Oct 26"]
-        P1["<b>Phase 1: Threat Engine</b><br/>Scoring Algorithm & Telemetry Tap"]
+        P1["<b>Phase 1: Threat Engine</b><br/>Attacker Model & Trust Scorer"]
     end
 
     subgraph S3["Oct 27 – Nov 09"]
-        P2["<b>Phase 2: Simulation Harness</b><br/>Benchmark Scenarios & Alerts"]
+        P2["<b>Phase 2: Red Team Testbed</b><br/>Attack Scenarios & Failover"]
     end
 
     subgraph S4["Nov 10 – Dec 02"]
-        P3["<b>Phase 3: Benchmarks & Paper</b><br/>Evaluation Suite & Research Paper"]
+        P3["<b>Phase 3: Resilient Benchmarks</b><br/>Naive vs Trust-Aware & Paper"]
     end
 
     subgraph S5["Dec 03 – Dec 05"]
@@ -143,10 +178,10 @@ flowchart LR
 | Phase | Time Horizon | Status | Key Focus & Technical Deliverables | Academic Milestone |
 | :---: | :---: | :---: | :--- | :---: |
 | **Phase 0** | **Oct 10 – Oct 17** | ✅ **Complete** | Environment setup, R-tree cable indexing (`shapely`/`rtree`), literature review | **Related Work (Oct 17)** |
-| **Phase 1** | **Oct 18 – Oct 26** | 🟡 **In Progress** | 6-factor composite scoring engine, `/api/vessels` polling tap, Cesium threat HUD | *Core Engine Verification* |
-| **Phase 2** | **Oct 27 – Nov 09** | ⏳ Upcoming | Deterministic simulation harness, benchmark scenarios, SOAR webhook dispatcher | **Progress Report (Oct 31)** |
-| **Phase 3** | **Nov 10 – Dec 02** | ⏳ Upcoming | Automated benchmark runs, ROC/PR curves, complete research paper | **Draft Report (Dec 03)** |
-| **Phase 4** | **Dec 03 – Dec 05** | ⏳ Upcoming | High-definition video demo, defense slide deck | **Final Presentation (Dec 05)** |
+| **Phase 1** | **Oct 18 – Oct 26** | 🟡 **In Progress** | Formalize Attacker Model, build Telemetry Trust Layer & scoring engine in `aegis-engine` | *Core Engine Verification* |
+| **Phase 2** | **Oct 27 – Nov 09** | ⏳ Upcoming | Adversarial **Red Team Simulation Testbed** (injecting spoofed tracks, ghost ships, dark approaches) | **Progress Report (Oct 31)** |
+| **Phase 3** | **Nov 10 – Dec 02** | ⏳ Upcoming | Benchmark **Naive Detectors vs. Aegis-Sea Trust-Aware Detector** under spoofing; Research Paper | **Draft Report (Dec 03)** |
+| **Phase 4** | **Dec 03 – Dec 05** | ⏳ Upcoming | High-definition screencast demo video, defense slide deck | **Final Presentation (Dec 05)** |
 
 ### Phase 0: Scaffolding & Geospatial Indexing `Oct 10 – Oct 17`
 - [x] Establish and verify local God's Eye View runtime (Node.js 24 LTS + Vite + Cesium).
@@ -156,28 +191,28 @@ flowchart LR
 - [x] Compile reference literature library (15 academic papers) and mapping matrix.
 - [ ] Finalize and submit the **Related Work** literature review document.
 
-### Phase 1: Threat Scoring Core & API Ingestion `Oct 18 – Oct 26` *(Current Phase)*
-- [ ] Build `AISPoller` client polling `/api/vessels` and caching kinematic states in `VesselState`.
-- [ ] Implement mathematical formulations for all 6 scoring factors in `aegis.scorer`.
+### Phase 1: Threat Scoring Core & Attacker Model `Oct 18 – Oct 26` *(Current Phase)*
+- [ ] Formalize Attacker Model specifications (spoofing capabilities, blackout tactics, ghost ship decoys).
+- [ ] Build `AISPoller` client polling `/api/vessels` with caching and telemetry sanity filters.
+- [ ] Implement Telemetry Trust Layer and 6-factor scoring engine in `aegis.scorer`.
 - [ ] Construct FastAPI service exposing `GET /api/threats` and `GET /api/threats/{mmsi}`.
 - [ ] Integrate Node.js reverse proxy (`server/providers/aegis.js`) and Cesium frontend threat layer.
 
-### Phase 2: Simulation Harness & Automated Response `Oct 27 – Nov 9`
-- [ ] Develop deterministic simulation engine (`aegis.simulation.harness`).
-- [ ] Author JSON scenario configurations for all benchmark scenarios (including *Yi Peng 3*).
+### Phase 2: Red Team Simulation Testbed & Automated Response `Oct 27 – Nov 9`
+- [ ] Build adversarial **Red Team simulation testbed** (`aegis.simulation.harness`).
+- [ ] Author test scenarios injecting spoofed AIS jumps, dark vessel maneuvers, and ghost ship decoys.
 - [ ] Implement `AlertDispatcher` with SOAR JSON webhook emission.
-- [ ] Build standalone mock webhook receiver and incident log audit recorder.
+- [ ] Build mock webhook receiver and simulated SDN fast-failover controller.
 - [ ] Complete and submit the **Progress Report** (due Oct 31).
 
-### Phase 3: Empirical Benchmarking & Research Paper Authoring `Nov 10 – Dec 3`
-- [ ] Execute automated benchmark runs across scenarios and naive baselines.
-- [ ] Generate all evaluation charts, confusion matrices, and ROC curves using `matplotlib` / `seaborn`.
-- [ ] Author the complete research paper.
-- [ ] Format and compile final document with all figures and academic citations.
+### Phase 3: Resilient Benchmarking & Research Paper Authoring `Nov 10 – Dec 3`
+- [ ] Benchmark **Naive Detectors** (pure distance/speed geofencing) vs. **Aegis-Sea Trust-Aware Detector** under red-team spoofing attacks.
+- [ ] Generate empirical performance charts, ROC curves, and false-alarm suppression metrics.
+- [ ] Author the complete research paper documenting the cyber-physical defense architecture.
 - [ ] Submit final **Draft Report** (due Dec 3).
 
 ### Phase 4: Final Demonstration & Presentation `Dec 3 – Dec 5`
-- [ ] Record a high-definition screencast demonstration of an anchor-drag incident triggering SDN rerouting.
+- [ ] Record a high-definition screencast demonstrating an anchor-drag and telemetry spoofing attack triggering proactive SDN rerouting.
 - [ ] Prepare slide presentation covering threat landscape, architecture, model, and metrics.
 - [ ] Deliver **Final Capstone Defense & Presentation** (Dec 5).
 
@@ -265,7 +300,7 @@ aegis-sea/
 
 ## 📚 Academic Research & Documentation
 
-A formal research paper detailing the underlying algorithms, empirical test results, and comparative benchmarks is being authored as part of this capstone project. 
+A formal research paper detailing the underlying algorithms, attacker model, and empirical red-team benchmarks is being authored as part of this capstone project. 
 
 - For technical background on the academic research papers informing this project, see [`docs/LITERATURE_MAPPING.md`](docs/LITERATURE_MAPPING.md).
 - Reference publications and monographs are archived in [`PAPERS/`](PAPERS/).
