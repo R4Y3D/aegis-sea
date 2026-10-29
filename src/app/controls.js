@@ -2,6 +2,8 @@ import { catalogControlServices } from './catalog.js';
 import { StyleManager } from '../ui/composition.js';
 import { flyToAustin } from '../camera.js';
 import { initCockpitCloudEffects } from '../cockpitCloudEffects.js';
+import { createAegisThreatLayer } from '../layers/aegisThreatLayer.js';
+import { initAegisThreatPanel } from '../ui/aegisThreatPanel.js';
 
 /** Construct the existing controls and camera presentation. */
 export function createApplicationControls({
@@ -38,6 +40,15 @@ export function createApplicationControls({
     weatherService: operations.requests.weather,
   });
   defer(() => cockpitCloudEffects?.destroy());
+
+  // Initialize Aegis-Sea Subsea Cable Threat Layer & Panel
+  const aegisThreatLayer = createAegisThreatLayer(viewer);
+  defer(() => aegisThreatLayer.destroy());
+
+  const aegisThreatPanel = initAegisThreatPanel({
+    onFlyToThreat: (threat) => aegisThreatLayer.flyToThreat(threat),
+  });
+  defer(() => aegisThreatPanel.destroy());
 
   // If no share link state, do default fly-to Austin
   if (!styleManager.hasShareState) {

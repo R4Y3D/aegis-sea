@@ -1,0 +1,374 @@
+/* Aegis-Sea Tactical Threat HUD & Simulation Dock Styles */
+
+.aegis-floating-hud {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 16, 26, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 6px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.75), 0 0 12px rgba(56, 189, 248, 0.15);
+  backdrop-filter: blur(12px);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: #f1f5f9;
+  max-width: 90vw;
+}
+
+.aegis-hud-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px;
+}
+
+.aegis-hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  padding-right: 12px;
+}
+
+.aegis-shield-icon {
+  font-size: 14px;
+}
+
+.aegis-hud-title {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+  font-size: 11px;
+}
+
+.aegis-pill {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.aegis-pill.online {
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.aegis-pill.offline {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.aegis-hud-counters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  padding-right: 12px;
+}
+
+.aegis-count-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.aegis-count-pill.crit { border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+.aegis-count-pill.crit .dot { color: #ef4444; }
+
+.aegis-count-pill.high { border-color: rgba(249, 115, 22, 0.4); color: #fdba74; }
+.aegis-count-pill.high .dot { color: #f97316; }
+
+.aegis-count-pill.adv { border-color: rgba(234, 179, 8, 0.4); color: #fde047; }
+.aegis-count-pill.adv .dot { color: #eab308; }
+
+.aegis-count-pill .val {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.aegis-hud-sim-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aegis-sim-btn {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.aegis-sim-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.aegis-hud-toggle {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.aegis-hud-toggle:hover {
+  color: #38bdf8;
+}
+
+.aegis-hud-drawer {
+  border-top: 1px solid rgba(56, 189, 248, 0.2);
+  background: rgba(8, 14, 24, 0.98);
+  padding: 10px 14px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.aegis-drawer-header {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin-bottom: 6px;
+}
+
+.aegis-drawer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.aegis-drawer-empty {
+  color: #64748b;
+  font-size: 10px;
+  font-style: italic;
+  padding: 6px 0;
+}
+
+/* Aegis-Sea Tactical Subsea Defense Panel Styles */
+
+#aegis-panel .aegis-panel-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(10, 16, 26, 0.92);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.aegis-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.aegis-badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.aegis-badge.online {
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.aegis-badge.offline {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.aegis-metric-pill {
+  color: #94a3b8;
+  font-size: 10px;
+}
+
+.aegis-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.aegis-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 4px;
+  background: rgba(15, 23, 42, 0.8);
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.aegis-chip-val {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.aegis-chip-lbl {
+  font-size: 8px;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.aegis-chip.crit .aegis-chip-val { color: #ef4444; }
+.aegis-chip.crit { border-color: rgba(239, 68, 68, 0.3); }
+
+.aegis-chip.high .aegis-chip-val { color: #f97316; }
+.aegis-chip.high { border-color: rgba(249, 115, 22, 0.3); }
+
+.aegis-chip.adv .aegis-chip-val { color: #eab308; }
+.aegis-chip.adv { border-color: rgba(234, 179, 8, 0.3); }
+
+.aegis-chip.norm .aegis-chip-val { color: #22c55e; }
+.aegis-chip.norm { border-color: rgba(34, 197, 94, 0.3); }
+
+.aegis-section-title {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.aegis-threat-queue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.aegis-empty-state {
+  color: #64748b;
+  font-size: 10px;
+  font-style: italic;
+  padding: 8px 4px;
+  text-align: center;
+}
+
+.aegis-threat-card {
+  padding: 8px 10px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-left: 3px solid #38bdf8;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.aegis-threat-card:hover {
+  background: rgba(30, 41, 59, 0.95);
+  transform: translateX(2px);
+}
+
+.aegis-threat-card.critical {
+  border-left-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.aegis-threat-card.high {
+  border-left-color: #f97316;
+  background: rgba(249, 115, 22, 0.08);
+}
+
+.aegis-threat-card.advisory {
+  border-left-color: #eab308;
+  background: rgba(234, 179, 8, 0.06);
+}
+
+.aegis-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.aegis-card-name {
+  font-weight: 600;
+  color: #f8fafc;
+  font-size: 11px;
+}
+
+.aegis-card-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.aegis-card-badge.critical { color: #fca5a5; background: rgba(239, 68, 68, 0.25); }
+.aegis-card-badge.high { color: #fdba74; background: rgba(249, 115, 22, 0.25); }
+.aegis-card-badge.advisory { color: #fde047; background: rgba(234, 179, 8, 0.2); }
+
+.aegis-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #94a3b8;
+  margin-bottom: 3px;
+}
+
+.aegis-card-action {
+  font-size: 9px;
+  color: #38bdf8;
+  letter-spacing: 0.02em;
+}
+
+.aegis-sim-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.aegis-btn {
+  text-align: left;
+  font-size: 10px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.aegis-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: #38bdf8;
+  color: #ffffff;
+}

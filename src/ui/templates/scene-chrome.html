@@ -39,6 +39,53 @@
       <span class="material-symbols-outlined" aria-hidden="true">public</span>
     </button>
   </nav>
+
+  <!-- Aegis-Sea Tactical Threat HUD & Simulation Dock -->
+  <div id="aegis-hud-dock" class="aegis-floating-hud" role="region" aria-label="Aegis-Sea Subsea Cable Defense">
+    <div class="aegis-hud-main">
+      <div class="aegis-hud-brand">
+        <span class="aegis-shield-icon">🛡️</span>
+        <span class="aegis-hud-title">AEGIS DEFENSE</span>
+        <span id="aegis-engine-pill" class="aegis-pill offline">○ OFFLINE</span>
+      </div>
+
+      <div class="aegis-hud-counters">
+        <div class="aegis-count-pill crit" title="Critical Threats (Imminent Cut / Anchor Drag)">
+          <span class="dot">●</span> CRIT <span id="aegis-count-crit" class="val">0</span>
+        </div>
+        <div class="aegis-count-pill high" title="High Threats (Suspicious Maneuver / Dark Vessel)">
+          <span class="dot">●</span> HIGH <span id="aegis-count-high" class="val">0</span>
+        </div>
+        <div class="aegis-count-pill adv" title="Advisory Warnings">
+          <span class="dot">●</span> ADV <span id="aegis-count-adv" class="val">0</span>
+        </div>
+      </div>
+
+      <div class="aegis-hud-sim-actions">
+        <button id="aegis-sim-btn-anchor" class="aegis-sim-btn" title="Simulate Baltic Sea Yi Peng 3 anchor dragging across C-Lion1">
+          ▶ YI PENG 3 SABOTAGE
+        </button>
+        <button id="aegis-sim-btn-jump" class="aegis-sim-btn" title="Simulate 240 kn SDR GPS spoofing teleport jump">
+          ▶ GPS SPOOF JUMP
+        </button>
+        <button id="aegis-sim-btn-ghost" class="aegis-sim-btn" title="Simulate phantom ghost ship decoy in 3 NM CPZ">
+          ▶ GHOST DECOY
+        </button>
+      </div>
+
+      <button id="aegis-hud-toggle-btn" class="aegis-hud-toggle" title="Toggle Threat Details Panel">
+        <span id="aegis-toggle-icon">▼</span>
+      </button>
+    </div>
+
+    <!-- Collapsible Threat Details Drawer -->
+    <div id="aegis-hud-drawer" class="aegis-hud-drawer" hidden>
+      <div class="aegis-drawer-header">ACTIVE SUBSEA CORRIDOR THREATS</div>
+      <div id="aegis-drawer-list" class="aegis-drawer-list">
+        <div class="aegis-drawer-empty">All 712 subsea cable corridors secure. Click an attack simulation button above to test real-time threat detection and BGP failover.</div>
+      </div>
+    </div>
+  </div>
   <div id="global-loading-status" role="status" aria-live="polite" aria-atomic="true" hidden>
     <span id="global-loading-label">LOADING LIVE DATA</span>
     <span id="global-loading-detail"></span>

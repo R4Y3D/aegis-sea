@@ -19,6 +19,7 @@ import {
   LABEL_GRID_PX,
   CARD_MIN_SEP_PX,
 } from './policy.js';
+import { aegisThreatService } from '../../services/aegisThreatService.js';
 
 export function createRendering({
   vesselState,
@@ -178,7 +179,15 @@ export function createRendering({
    */
 
   function shipIcon(record, selected) {
-    const cssColor = selected ? '#ffffff' : vesselTypeCss(record.type);
+    let cssColor = selected ? '#ffffff' : vesselTypeCss(record.type);
+    if (!selected && record?.mmsi) {
+      const threat = aegisThreatService.getThreatForMmsi(record.mmsi);
+      if (threat && threat.threat_level && threat.threat_level !== 'NORMAL') {
+        if (threat.threat_level === 'CRITICAL') cssColor = '#ef4444';
+        else if (threat.threat_level === 'HIGH') cssColor = '#f97316';
+        else if (threat.threat_level === 'ADVISORY') cssColor = '#eab308';
+      }
+    }
     const key = `${cssColor}:${selected ? 'selected' : 'normal'}`;
     if (vesselState.shipIconCache.has(key))
       return vesselState.shipIconCache.get(key);

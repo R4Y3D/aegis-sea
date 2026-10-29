@@ -12,6 +12,65 @@
     </div>
   </div>
 
+  <!-- Aegis-Sea Subsea Cable Cyber-Physical Threat Defense Panel -->
+  <div id="aegis-panel" class="panel-collapsible active" data-panel-id="aegis-panel">
+    <div class="panel-glow"></div>
+    <div class="aegis-panel-inner" data-rail-scroller>
+      <div class="panel-header">
+        <span class="panel-title">AEGIS SUBSEA DEFENSE</span>
+        <span class="panel-divider"></span>
+        <button class="panel-collapse-btn" data-collapse-target="aegis-panel" title="Collapse panel">-</button>
+      </div>
+      <div class="cyber-panel-body" data-rail-scroller>
+        <!-- Engine Status Banner -->
+        <div class="aegis-status-bar">
+          <span id="aegis-engine-badge" class="aegis-badge online">● ENGINE ONLINE</span>
+          <span id="aegis-cable-count" class="aegis-metric-pill">712 CABLES</span>
+        </div>
+
+        <!-- Threat Metric Summary Chips -->
+        <div class="aegis-metrics-grid">
+          <div class="aegis-chip crit">
+            <span class="aegis-chip-val" id="aegis-crit-count">0</span>
+            <span class="aegis-chip-lbl">CRITICAL</span>
+          </div>
+          <div class="aegis-chip high">
+            <span class="aegis-chip-val" id="aegis-high-count">0</span>
+            <span class="aegis-chip-lbl">HIGH</span>
+          </div>
+          <div class="aegis-chip adv">
+            <span class="aegis-chip-val" id="aegis-adv-count">0</span>
+            <span class="aegis-chip-lbl">ADVISORY</span>
+          </div>
+          <div class="aegis-chip norm">
+            <span class="aegis-chip-val" id="aegis-norm-count">0</span>
+            <span class="aegis-chip-lbl">NORMAL</span>
+          </div>
+        </div>
+
+        <!-- Active Threat Queue -->
+        <div class="aegis-section-title">ACTIVE CORRIDOR THREATS</div>
+        <div id="aegis-threat-list" class="aegis-threat-queue" data-rail-scroller>
+          <div class="aegis-empty-state">No elevated threats detected. Monitored corridors secure.</div>
+        </div>
+
+        <!-- Simulation Injection Controls -->
+        <div class="aegis-section-title">RED-TEAM ATTACK INJECTION</div>
+        <div class="aegis-sim-controls">
+          <button id="aegis-btn-sim-anchor" class="scene-btn aegis-btn" title="Simulate Baltic Sea Yi Peng 3 anchor dragging across C-Lion1">
+            ▶ YI PENG 3 SABOTAGE
+          </button>
+          <button id="aegis-btn-sim-jump" class="scene-btn aegis-btn" title="Simulate 240 kn SDR GPS spoofing teleport jump">
+            ▶ GPS SPOOF JUMP
+          </button>
+          <button id="aegis-btn-sim-ghost" class="scene-btn aegis-btn" title="Simulate phantom ghost ship decoy in 3 NM CPZ">
+            ▶ GHOST SHIP DECOY
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- CCTV Coverage Panel -->
   <div id="cctv-panel" class="panel-collapsible collapsed" data-panel-id="cctv-panel">
     <div class="panel-glow"></div>

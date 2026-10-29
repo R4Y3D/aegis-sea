@@ -2,6 +2,7 @@ import {
   accentForVesselType,
   normalizeVesselType,
 } from '../../data/vesselLabels.js';
+import { aegisThreatService } from '../../services/aegisThreatService.js';
 
 export function createCards({
   vesselState,
@@ -57,6 +58,16 @@ export function createCards({
       parts.push(formatSpeed(record.speed));
     const direction = record.heading ?? record.course;
     if (Number.isFinite(direction)) parts.push(`${Math.round(direction)}°`);
+
+    let accent = accentForVesselType(record.type);
+    const threat = record?.mmsi ? aegisThreatService.getThreatForMmsi(record.mmsi) : null;
+    if (threat && threat.threat_level && threat.threat_level !== 'NORMAL') {
+      if (threat.threat_level === 'CRITICAL') accent = '#ef4444';
+      else if (threat.threat_level === 'HIGH') accent = '#f97316';
+      else if (threat.threat_level === 'ADVISORY') accent = '#eab308';
+      parts.unshift(`⚠️ ${threat.threat_level}`);
+    }
+
     return {
       id: vesselOverlayEntryId(record),
       actionable: Boolean(record?.mmsi),
@@ -64,7 +75,7 @@ export function createCards({
         components.rendering.getVisual(record).billboard?.position ||
         components.rendering.getVisual(record).position,
       gapPx: 10,
-      accent: accentForVesselType(record.type),
+      accent,
       title: trimHudValue(displayVesselName(record), 26),
       details: parts.length ? [parts.join(' · ')] : [],
       selected: false,
@@ -96,6 +107,23 @@ export function createCards({
     details.push(
       `MMSI ${record.mmsi || '--'} · ${formatPositionTime(record)}${stale ? ' · STALE' : ''}`,
     );
+
+    let accent = accentForVesselType(record.type);
+    const threat = record?.mmsi ? aegisThreatService.getThreatForMmsi(record.mmsi) : null;
+    if (threat && threat.threat_level && threat.threat_level !== 'NORMAL') {
+      if (threat.threat_level === 'CRITICAL') accent = '#ef4444';
+      else if (threat.threat_level === 'HIGH') accent = '#f97316';
+      else if (threat.threat_level === 'ADVISORY') accent = '#eab308';
+
+      details.unshift(`⚠️ AEGIS: ${threat.threat_level} (Score ${Number(threat.threat_score || 0).toFixed(1)}/100)`);
+      if (threat.closest_cable) {
+        details.push(`🛡️ Target: ${threat.closest_cable.cable_name} (${Number(threat.closest_cable.distance_nm || 0).toFixed(1)} NM)`);
+      }
+      if (threat.recommended_action && threat.recommended_action !== 'NONE') {
+        details.push(`⚡ Action: ${threat.recommended_action}`);
+      }
+    }
+
     return {
       id: vesselOverlayEntryId(record),
       actionable: Boolean(record?.mmsi),
@@ -103,7 +131,7 @@ export function createCards({
         components.rendering.getVisual(record).billboard?.position ||
         components.rendering.getVisual(record).position,
       gapPx: 12,
-      accent: accentForVesselType(record.type),
+      accent,
       title: trimHudValue(displayVesselName(record), 32),
       details,
       selected: true,
