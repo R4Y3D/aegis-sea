@@ -129,12 +129,35 @@ class AegisThreatService {
     return this.threatsByMmsi.get(String(mmsi)) || null;
   }
 
+  _updateOverviewCounts() {
+    this.overview.threats_critical_count = this.allThreats.filter(
+      (t) => t.threat_level === 'CRITICAL',
+    ).length;
+    this.overview.threats_high_count = this.allThreats.filter(
+      (t) => t.threat_level === 'HIGH',
+    ).length;
+    this.overview.threats_advisory_count = this.allThreats.filter(
+      (t) => t.threat_level === 'ADVISORY',
+    ).length;
+  }
+
   /** Injects an adversarial attack scenario on-demand via /api/evaluate. */
   async simulateScenario(scenarioType) {
+    const simulationMmsis = ['412543000', '999000102', '999000103'];
+
+    // Clear previous simulations so active scenarios never stack
+    this.activeSimulations.clear();
+    for (const simMmsi of simulationMmsis) {
+      this.threatsByMmsi.delete(simMmsi);
+    }
+    this.allThreats = this.allThreats.filter(
+      (t) => !simulationMmsis.includes(String(t.mmsi)),
+    );
+
     const scenarios = {
       anchor_drag: {
         mmsi: '412543000',
-        name: 'Yi Peng 3 (Simulated)',
+        name: 'Yi Peng 3 (Anchor Dragging Sabotage)',
         lat: 60.05,
         lon: 25.02,
         sog: 1.2,
@@ -145,7 +168,7 @@ class AegisThreatService {
       },
       gps_jump: {
         mmsi: '999000102',
-        name: 'SDR Spoofed Fix',
+        name: 'SDR Spoofed Fix (Kinematic Jump)',
         lat: 60.0333,
         lon: 25.0,
         sog: 1.0,
@@ -154,7 +177,7 @@ class AegisThreatService {
       },
       ghost_decoy: {
         mmsi: '999000103',
-        name: 'Phantom Ghost Contact',
+        name: 'Phantom Ghost Decoy (Failover DoS)',
         lat: 60.05,
         lon: 25.02,
         sog: 1.5,
@@ -174,14 +197,17 @@ class AegisThreatService {
       });
       if (resp.ok) {
         const assessment = await resp.json();
-        // Pin in active simulations map so background polls never wipe it
-        this.activeSimulations.set(String(assessment.mmsi), assessment);
-        this.threatsByMmsi.set(String(assessment.mmsi), assessment);
+        const mmsiStr = String(assessment.mmsi);
+
+        // Pin exclusively in active simulations map
+        this.activeSimulations.set(mmsiStr, assessment);
+        this.threatsByMmsi.set(mmsiStr, assessment);
         this.allThreats = [
           assessment,
-          ...this.allThreats.filter((t) => t.mmsi !== assessment.mmsi),
+          ...this.allThreats.filter((t) => String(t.mmsi) !== mmsiStr),
         ];
-        this.allThreats.sort((a, b) => b.threat_score - a.threat_score);
+        this.allThreats.sort((a, b) => (b.threat_score || 0) - (a.threat_score || 0));
+        this._updateOverviewCounts();
         this._notify();
         return assessment;
       }
@@ -193,7 +219,15 @@ class AegisThreatService {
 
   /** Clears active simulated threat scenarios. */
   clearSimulations() {
+    const simulationMmsis = ['412543000', '999000102', '999000103'];
     this.activeSimulations.clear();
+    for (const simMmsi of simulationMmsis) {
+      this.threatsByMmsi.delete(simMmsi);
+    }
+    this.allThreats = this.allThreats.filter(
+      (t) => !simulationMmsis.includes(String(t.mmsi)),
+    );
+    this._updateOverviewCounts();
     this.fetchThreats();
   }
 }

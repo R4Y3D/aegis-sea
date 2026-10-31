@@ -193,10 +193,60 @@
   animation: pulse-border 1.5s infinite;
 }
 
+.aegis-stage-badge.legit {
+  background: rgba(56, 189, 248, 0.15);
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.aegis-stage-badge.jump {
+  background: rgba(234, 179, 8, 0.25);
+  color: #fef08a;
+  border-color: #eab308;
+  animation: pulse-border-yellow 1.5s infinite;
+}
+
+.aegis-stage-badge.suppressed {
+  background: rgba(234, 179, 8, 0.2);
+  color: #fde047;
+  border-color: rgba(234, 179, 8, 0.5);
+}
+
+.aegis-stage-badge.quiet {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.aegis-stage-badge.ghost {
+  background: rgba(168, 85, 247, 0.2);
+  color: #e9d5ff;
+  border-color: #c084fc;
+  animation: pulse-border-purple 1.5s infinite;
+}
+
+.aegis-stage-badge.thwarted {
+  background: rgba(168, 85, 247, 0.25);
+  color: #d8b4fe;
+  border-color: #a855f7;
+}
+
 @keyframes pulse-border {
   0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
   70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
   100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+@keyframes pulse-border-yellow {
+  0% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(234, 179, 8, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+}
+
+@keyframes pulse-border-purple {
+  0% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(168, 85, 247, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
 }
 
 .aegis-sim-scrubber-box {

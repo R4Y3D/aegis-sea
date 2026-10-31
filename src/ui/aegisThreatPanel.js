@@ -222,32 +222,41 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
     // Fallback if backend offline
     if (!assessment && fallbackScenarios[type]) {
       assessment = fallbackScenarios[type];
-      aegisThreatService.activeSimulations.set(String(assessment.mmsi), assessment);
-      aegisThreatService.threatsByMmsi.set(String(assessment.mmsi), assessment);
+      const simulationMmsis = ['412543000', '999000102', '999000103'];
+      aegisThreatService.activeSimulations.clear();
+      for (const simMmsi of simulationMmsis) {
+        aegisThreatService.threatsByMmsi.delete(simMmsi);
+      }
+      aegisThreatService.allThreats = aegisThreatService.allThreats.filter(
+        (t) => !simulationMmsis.includes(String(t.mmsi)),
+      );
+
+      const mmsiStr = String(assessment.mmsi);
+      aegisThreatService.activeSimulations.set(mmsiStr, assessment);
+      aegisThreatService.threatsByMmsi.set(mmsiStr, assessment);
       aegisThreatService.allThreats = [
         assessment,
-        ...aegisThreatService.allThreats.filter((t) => t.mmsi !== assessment.mmsi),
+        ...aegisThreatService.allThreats.filter((t) => String(t.mmsi) !== mmsiStr),
       ];
-      aegisThreatService.overview.threats_critical_count = aegisThreatService.allThreats.filter(
-        (t) => t.threat_level === 'CRITICAL',
-      ).length;
-      aegisThreatService.overview.threats_high_count = aegisThreatService.allThreats.filter(
-        (t) => t.threat_level === 'HIGH',
-      ).length;
-      aegisThreatService.overview.threats_advisory_count = aegisThreatService.allThreats.filter(
-        (t) => t.threat_level === 'ADVISORY',
-      ).length;
+      aegisThreatService.allThreats.sort(
+        (a, b) => (b.threat_score || 0) - (a.threat_score || 0),
+      );
+      if (typeof aegisThreatService._updateOverviewCounts === 'function') {
+        aegisThreatService._updateOverviewCounts();
+      }
       aegisThreatService._notify();
     }
 
-    // Automatically reveal drawer and fly camera to target
+    // Automatically reveal drawer and trigger cinematic simulation
     if (assessment) {
       if (hudDrawer) {
         hudDrawer.hidden = false;
         isDrawerOpen = true;
         if (toggleIcon) toggleIcon.textContent = '▲';
       }
-      if (typeof onFlyToThreat === 'function') {
+      if (aegisLayer && typeof aegisLayer.startScenario === 'function') {
+        aegisLayer.startScenario(type, assessment);
+      } else if (typeof onFlyToThreat === 'function') {
         onFlyToThreat(assessment);
       }
     }
@@ -275,7 +284,8 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
   hudSimProgress?.addEventListener('input', (e) => {
     if (aegisLayer && typeof aegisLayer.setSimulationTime === 'function') {
       const ratio = Number(e.target.value) / 100.0;
-      aegisLayer.setSimulationTime(ratio * 24.0);
+      const duration = aegisLayer.simState?.durationSec || 24.0;
+      aegisLayer.setSimulationTime(ratio * duration);
     }
   });
 
