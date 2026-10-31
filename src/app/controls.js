@@ -47,6 +47,7 @@ export function createApplicationControls({
 
   const aegisThreatPanel = initAegisThreatPanel({
     onFlyToThreat: (threat) => aegisThreatLayer.flyToThreat(threat),
+    aegisLayer: aegisThreatLayer,
   });
   defer(() => aegisThreatPanel.destroy());
 

@@ -16,6 +16,7 @@ class AegisThreatService {
       threats_normal_count: 0,
       threats: [],
     };
+    this.activeSimulations = new Map();
     this.isEngineOnline = false;
     this.lastUpdated = null;
     this._pollTimer = null;
@@ -103,8 +104,17 @@ class AegisThreatService {
           newMap.set(String(t.mmsi), t);
         }
       }
+
+      // Retain active adversarial simulations across background polls
+      for (const [simMmsi, simThreat] of this.activeSimulations.entries()) {
+        newMap.set(simMmsi, simThreat);
+      }
+
+      const combinedThreats = Array.from(newMap.values());
+      combinedThreats.sort((a, b) => (b.threat_score || 0) - (a.threat_score || 0));
+
       this.threatsByMmsi = newMap;
-      this.allThreats = threatList;
+      this.allThreats = combinedThreats;
       this.lastUpdated = Date.now();
       this._notify();
     } catch (err) {
@@ -164,7 +174,8 @@ class AegisThreatService {
       });
       if (resp.ok) {
         const assessment = await resp.json();
-        // Immediately add to cache and notify
+        // Pin in active simulations map so background polls never wipe it
+        this.activeSimulations.set(String(assessment.mmsi), assessment);
         this.threatsByMmsi.set(String(assessment.mmsi), assessment);
         this.allThreats = [
           assessment,
@@ -178,6 +189,12 @@ class AegisThreatService {
       console.error('[AegisThreatService] Failed to simulate scenario:', err);
     }
     return null;
+  }
+
+  /** Clears active simulated threat scenarios. */
+  clearSimulations() {
+    this.activeSimulations.clear();
+    this.fetchThreats();
   }
 }
 

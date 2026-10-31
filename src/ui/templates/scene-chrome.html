@@ -78,6 +78,24 @@
       </button>
     </div>
 
+    <!-- Interactive Scenario Playback Controller -->
+    <div id="aegis-sim-controller" class="aegis-sim-controller" hidden>
+      <div class="aegis-sim-ctrl-left">
+        <button id="aegis-sim-play-btn" class="aegis-ctrl-icon-btn" title="Pause or Resume Scenario Playback">⏸</button>
+        <button id="aegis-sim-replay-btn" class="aegis-ctrl-icon-btn" title="Restart Scenario Animation">↺</button>
+        <span id="aegis-sim-stage-badge" class="aegis-stage-badge">STAGE 1: APPROACH</span>
+      </div>
+      <div class="aegis-sim-scrubber-box">
+        <input type="range" id="aegis-sim-progress" min="0" max="100" value="0" step="0.5" class="aegis-sim-slider" title="Scrub simulation timeline">
+        <span id="aegis-sim-time-text" class="aegis-sim-time">00:00 / 00:24</span>
+      </div>
+      <div class="aegis-sim-telemetry-pill">
+        <span id="aegis-sim-live-sog">10.5 kn</span>
+        <span class="sep">·</span>
+        <span id="aegis-sim-live-score" class="score-pill">Score: 22.0</span>
+      </div>
+    </div>
+
     <!-- Collapsible Threat Details Drawer -->
     <div id="aegis-hud-drawer" class="aegis-hud-drawer" hidden>
       <div class="aegis-drawer-header">ACTIVE SUBSEA CORRIDOR THREATS</div>

@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from aegis.config import settings
 from aegis.cable_index import CableCorridorIndex
@@ -75,6 +76,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    """Redirect root requests to interactive Swagger API docs."""
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health", tags=["System"])

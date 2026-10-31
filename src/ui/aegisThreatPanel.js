@@ -6,7 +6,7 @@
 
 import { aegisThreatService } from '../services/aegisThreatService.js';
 
-export function initAegisThreatPanel({ onFlyToThreat } = {}) {
+export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
   // Elements in floating HUD dock
   const hudDock = document.getElementById('aegis-hud-dock');
   const enginePill = document.getElementById('aegis-engine-pill');
@@ -21,6 +21,11 @@ export function initAegisThreatPanel({ onFlyToThreat } = {}) {
   const hudDrawer = document.getElementById('aegis-hud-drawer');
   const hudDrawerList = document.getElementById('aegis-drawer-list');
   const toggleIcon = document.getElementById('aegis-toggle-icon');
+
+  // Simulation Controller Bar elements
+  const hudSimPlayBtn = document.getElementById('aegis-sim-play-btn');
+  const hudSimReplayBtn = document.getElementById('aegis-sim-replay-btn');
+  const hudSimProgress = document.getElementById('aegis-sim-progress');
 
   // Elements in sidebar panel (if present)
   const engineBadge = document.getElementById('aegis-engine-badge');
@@ -217,6 +222,7 @@ export function initAegisThreatPanel({ onFlyToThreat } = {}) {
     // Fallback if backend offline
     if (!assessment && fallbackScenarios[type]) {
       assessment = fallbackScenarios[type];
+      aegisThreatService.activeSimulations.set(String(assessment.mmsi), assessment);
       aegisThreatService.threatsByMmsi.set(String(assessment.mmsi), assessment);
       aegisThreatService.allThreats = [
         assessment,
@@ -251,6 +257,27 @@ export function initAegisThreatPanel({ onFlyToThreat } = {}) {
   hudBtnAnchor?.addEventListener('click', () => triggerSimulation('anchor_drag'));
   hudBtnJump?.addEventListener('click', () => triggerSimulation('gps_jump'));
   hudBtnGhost?.addEventListener('click', () => triggerSimulation('ghost_decoy'));
+
+  // Bind Simulation Controller bar
+  hudSimPlayBtn?.addEventListener('click', () => {
+    if (aegisLayer && typeof aegisLayer.togglePlay === 'function') {
+      const isPlaying = aegisLayer.togglePlay();
+      hudSimPlayBtn.textContent = isPlaying ? '⏸' : '▶';
+    }
+  });
+
+  hudSimReplayBtn?.addEventListener('click', () => {
+    if (aegisLayer && typeof aegisLayer.replay === 'function') {
+      aegisLayer.replay();
+    }
+  });
+
+  hudSimProgress?.addEventListener('input', (e) => {
+    if (aegisLayer && typeof aegisLayer.setSimulationTime === 'function') {
+      const ratio = Number(e.target.value) / 100.0;
+      aegisLayer.setSimulationTime(ratio * 24.0);
+    }
+  });
 
   // Bind sidebar buttons
   btnAnchor?.addEventListener('click', () => triggerSimulation('anchor_drag'));
