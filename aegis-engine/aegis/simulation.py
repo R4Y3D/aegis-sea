@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from aegis.cable_index import CableCorridorIndex
 from aegis.config import settings, Settings
+from aegis.dispatcher import AlertDispatcher
 from aegis.models import ThreatLevel, ThreatAssessment, VesselTrackPoint
 from aegis.scorer import ThreatScorer
 
@@ -60,6 +61,7 @@ class SimulationRunner:
         self.cable_index = cable_index or CableCorridorIndex(auto_load=True)
         self.aegis_scorer = ThreatScorer(cable_index=self.cable_index)
         self.naive_detector = NaiveGeofenceDetector(cable_index=self.cable_index)
+        self.dispatcher = AlertDispatcher(config=settings)
 
     def run_scenario_1_anchor_dragging(self) -> Dict[str, Any]:
         """Scenario 1: Real Ground-Truth Sabotage (Yi Peng 3 Profile across C-Lion1).
@@ -92,6 +94,9 @@ class SimulationRunner:
             last_seen_epoch=now,
         )
 
+        bgp_payload = self.dispatcher.build_bgp_evacuation_payload(aegis_eval)
+        soar_payload = self.dispatcher.build_soar_payload(aegis_eval)
+
         return {
             "id": "SCENARIO-01",
             "title": "Ground-Truth Anchor Dragging Sabotage",
@@ -108,7 +113,11 @@ class SimulationRunner:
                 "action": aegis_eval.recommended_action,
                 "trust_status": "VALID_TELEMETRY",
                 "verdict": "TRUE_POSITIVE (Detected & Pre-emptive Failover Armed)",
+                "bgp_status": bgp_payload.status,
+                "bgp_community": bgp_payload.bgp_community,
             },
+            "bgp_payload": bgp_payload.model_dump(),
+            "soar_payload": soar_payload.model_dump(),
             "comparison": "Both systems detect the threat; Aegis-Sea validates track kinematics and arms pre-emptive BGP evacuation.",
         }
 
@@ -142,6 +151,9 @@ class SimulationRunner:
             last_seen_epoch=now,
         )
 
+        bgp_payload = self.dispatcher.build_bgp_evacuation_payload(aegis_eval)
+        soar_payload = self.dispatcher.build_soar_payload(aegis_eval)
+
         return {
             "id": "SCENARIO-02",
             "title": "GPS Coordinate Jump / SDR Telemetry Spoofing",
@@ -158,7 +170,11 @@ class SimulationRunner:
                 "action": aegis_eval.recommended_action,
                 "trust_status": f"FLAGGED_JUMP ({aegis_eval.telemetry_trust.implied_speed_knots} kn)",
                 "verdict": "FALSE_ALARM_SUPPRESSED (Kinematic Jump Filter Activated)",
+                "bgp_status": bgp_payload.status,
+                "bgp_community": bgp_payload.bgp_community,
             },
+            "bgp_payload": bgp_payload.model_dump(),
+            "soar_payload": soar_payload.model_dump(),
             "comparison": "Naive geofencing blindly triggers emergency failover. Aegis-Sea flags 240 kn jump and suppresses false alarm.",
         }
 
@@ -189,6 +205,9 @@ class SimulationRunner:
             last_seen_epoch=now,
         )
 
+        bgp_payload = self.dispatcher.build_bgp_evacuation_payload(aegis_eval)
+        soar_payload = self.dispatcher.build_soar_payload(aegis_eval)
+
         return {
             "id": "SCENARIO-03",
             "title": "Phantom Ghost Ship Decoy (Failover DoS)",
@@ -205,7 +224,11 @@ class SimulationRunner:
                 "action": aegis_eval.recommended_action,
                 "trust_status": "GHOST_CANDIDATE_FLAGGED",
                 "verdict": "FAILOVER_HELD (Requires Target Verification Before Route Drain)",
+                "bgp_status": bgp_payload.status,
+                "bgp_community": bgp_payload.bgp_community,
             },
+            "bgp_payload": bgp_payload.model_dump(),
+            "soar_payload": soar_payload.model_dump(),
             "comparison": "Naive geofencing causes traffic disruption. Aegis-Sea identifies phantom contact and mandates verification.",
         }
 

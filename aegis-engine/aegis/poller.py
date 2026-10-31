@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from aegis.config import settings, Settings
 from aegis.cable_index import CableCorridorIndex
+from aegis.dispatcher import AlertDispatcher
 from aegis.models import (
     ThreatAssessment,
     ThreatLevel,
@@ -46,10 +47,12 @@ class AISPoller:
         self,
         scorer: ThreatScorer,
         config: Optional[Settings] = None,
+        dispatcher: Optional[AlertDispatcher] = None,
         max_track_samples: int = 64,
     ):
         self.scorer = scorer
         self.config = config or settings
+        self.dispatcher = dispatcher
         self.max_track_samples = max_track_samples
         self._vessels: Dict[str, CachedVessel] = {}
         self._track_buffers: Dict[str, Deque[VesselTrackPoint]] = {}
@@ -162,6 +165,19 @@ class AISPoller:
             track_history=list(buffer),
             latest_assessment=assessment,
         )
+
+        # Automated Incident Response Dispatch Trigger
+        if (
+            self.dispatcher is not None
+            and self.config.auto_dispatch_enabled
+            and assessment.threat_level in (ThreatLevel.HIGH, ThreatLevel.CRITICAL)
+        ):
+            try:
+                loop = asyncio.get_running_loop()
+                loop.create_task(self.dispatcher.dispatch(assessment))
+            except RuntimeError:
+                # No active event loop running (e.g., synchronous unit test)
+                pass
 
         return assessment
 

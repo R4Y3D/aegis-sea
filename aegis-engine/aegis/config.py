@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     threshold_high: float = 61.0       # 61 <= T < 81: Active Threat / SOAR Webhook
     threshold_advisory: float = 31.0   # 31 <= T < 61: Advisory Watch / Increased Polling
 
+    # Incident Response & SOAR Dispatcher Settings
+    soar_webhook_url: str | None = None
+    bgp_controller_webhook_url: str | None = None
+    alert_cooldown_seconds: float = 300.0  # 5 minutes deduplication cooldown
+    auto_dispatch_enabled: bool = True     # Auto-dispatch on live poller HIGH/CRITICAL threats
+
     # Submarine cable GeoJSON path
     cable_geojson_path: Path = (
         Path(__file__).resolve().parent.parent.parent

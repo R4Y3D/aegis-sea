@@ -71,6 +71,10 @@ def main():
         print(f"  |    Trust Status : {r['aegis']['trust_status']}")
         print(f"  |    Action       : {r['aegis']['action']}")
         print(f"  |    Verdict      : {r['aegis']['verdict']}")
+        if "bgp_payload" in r:
+            bgp = r["bgp_payload"]
+            print(f"  |    BGP Action   : {bgp['action']} [{bgp['status']}]")
+            print(f"  |    BGP Comm.    : {bgp['bgp_community']}")
         print(f"  +{'-' * 74}+")
         print(f"  Analysis: {r['comparison']}")
 

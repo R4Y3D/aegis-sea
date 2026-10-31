@@ -8,9 +8,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from aegis.config import settings
 from aegis.cable_index import CableCorridorIndex
+from aegis.dispatcher import AlertDispatcher
 from aegis.models import (
     CableIndexStats,
+    DispatchRecord,
     EvaluateRequest,
+    ManualDispatchRequest,
     ThreatAssessment,
     ThreatLevel,
     ThreatOverview,
@@ -27,14 +30,16 @@ logger = logging.getLogger("aegis.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initializes subsea cable spatial index, scoring engine, and live poller."""
+    """Initializes subsea cable spatial index, scoring engine, alert dispatcher, and live poller."""
     logger.info("Initializing Aegis-Sea Subsea Cable Corridor Index...")
     cable_index = CableCorridorIndex(auto_load=True)
     scorer = ThreatScorer(cable_index=cable_index, config=settings)
-    poller = AISPoller(scorer=scorer, config=settings)
+    dispatcher = AlertDispatcher(config=settings)
+    poller = AISPoller(scorer=scorer, config=settings, dispatcher=dispatcher)
 
     app.state.cable_index = cable_index
     app.state.scorer = scorer
+    app.state.dispatcher = dispatcher
     app.state.poller = poller
 
     logger.info(
@@ -77,6 +82,7 @@ async def health_check():
     """System health check and spatial index statistics."""
     poller: AISPoller = app.state.poller
     cable_index: CableCorridorIndex = app.state.cable_index
+    dispatcher: AlertDispatcher = app.state.dispatcher
     return {
         "status": "healthy",
         "service": "aegis-sea-engine",
@@ -84,6 +90,7 @@ async def health_check():
         "cables_indexed": cable_index.total_features,
         "segments_indexed": cable_index.total_segments,
         "vessels_monitored": len(poller._vessels),
+        "alerts_dispatched": len(dispatcher._history),
         "poller_status": poller._last_poll_status,
         "last_poll_epoch": poller._last_poll_epoch,
     }
@@ -158,3 +165,35 @@ async def trigger_poll():
         "vessels_ingested": count,
         "total_monitored": len(poller._vessels),
     }
+
+
+@app.post("/api/alerts/dispatch", response_model=DispatchRecord, tags=["Incident Response"])
+async def dispatch_incident_response(request: ManualDispatchRequest):
+    """Manually triggers an automated incident response dispatch for a monitored vessel."""
+    poller: AISPoller = app.state.poller
+    dispatcher: AlertDispatcher = app.state.dispatcher
+
+    threat = poller.get_assessment(request.mmsi)
+    if not threat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Vessel with MMSI '{request.mmsi}' is not currently monitored or assessed.",
+        )
+
+    record = await dispatcher.dispatch(threat, force=request.force)
+    return record
+
+
+@app.get("/api/alerts/history", response_model=List[DispatchRecord], tags=["Incident Response"])
+async def get_dispatch_history(limit: int = Query(50, ge=1, le=500)):
+    """Retrieves the recent audit history of executed automated incident response dispatches."""
+    dispatcher: AlertDispatcher = app.state.dispatcher
+    return dispatcher.get_history(limit=limit)
+
+
+@app.post("/api/alerts/clear", tags=["Incident Response"])
+async def clear_dispatch_history():
+    """Clears the incident response audit history and deduplication cooldowns."""
+    dispatcher: AlertDispatcher = app.state.dispatcher
+    dispatcher.clear_history()
+    return {"status": "cleared", "history_count": 0}

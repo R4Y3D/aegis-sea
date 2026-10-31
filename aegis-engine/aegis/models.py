@@ -133,3 +133,70 @@ class EvaluateRequest(BaseModel):
     entered_corridor_epoch: Optional[float] = Field(None, description="Corridor entry epoch")
     last_seen_epoch: Optional[float] = Field(None, description="Previous broadcast epoch")
 
+
+class DispatchStatus(str, Enum):
+    """Execution status of an automated incident response dispatch."""
+
+    DISPATCHED = "DISPATCHED"                  # Live webhook transmitted successfully
+    SIMULATED = "SIMULATED"                    # Emitted to local log/testbed (no remote webhook configured)
+    SUPPRESSED_COOLDOWN = "SUPPRESSED_COOLDOWN"# Suppressed by deduplication cooldown
+    HELD_VERIFICATION = "HELD_VERIFICATION"    # Failover held: phantom decoy requires target confirmation
+    SUPPRESSED_SPOOF = "SUPPRESSED_SPOOF"      # Suppressed: impossible kinematic jump filtered out
+    FAILED = "FAILED"                          # Webhook transport failure
+
+
+class SOARAlertPayload(BaseModel):
+    """Standardized Security Operations Alert (SOAR/SIEM) payload."""
+
+    event_id: str
+    timestamp_iso: str
+    severity: str
+    action: str
+    vessel_mmsi: str
+    vessel_name: str
+    threat_score: float
+    cable_id: Optional[str] = None
+    cable_name: Optional[str] = None
+    distance_nm: Optional[float] = None
+    coordinates: Dict[str, float]
+    telemetry_trust: TelemetryTrust
+    incident_summary: str
+
+
+class BGPEvacuationPayload(BaseModel):
+    """Pre-computed Software-Defined Network (SDN) and BGP route failover payload."""
+
+    cable_id: str
+    cable_name: str
+    action: str = Field(..., description="'PREEMPTIVE_EVACUATION', 'PREPEND_AS_PATH', or 'FAILOVER_HOLD'")
+    status: str = Field(..., description="'ARMED_PREEMPTIVE', 'HELD_UNVERIFIED_DECOY', or 'SUPPRESSED_SPOOF'")
+    affected_prefixes: List[str]
+    bgp_community: str = Field(..., description="BGP Community attribute (e.g., '65000:666' graceful-shutdown)")
+    backup_transit_paths: List[str]
+    estimated_switchover_ms: int = Field(
+        450, description="Estimated BGP reconvergence time in ms (vs 30,000+ ms reactive loss-of-light)"
+    )
+
+
+class DispatchRecord(BaseModel):
+    """Audit log entry for an executed or evaluated incident response event."""
+
+    dispatch_id: str
+    timestamp_iso: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    mmsi: str
+    vessel_name: str
+    threat_level: ThreatLevel
+    threat_score: float
+    status: DispatchStatus
+    soar_payload: Optional[SOARAlertPayload] = None
+    bgp_payload: Optional[BGPEvacuationPayload] = None
+    target_webhook: Optional[str] = None
+    error_message: Optional[str] = None
+
+
+class ManualDispatchRequest(BaseModel):
+    """Request payload to manually trigger an incident response dispatch."""
+
+    mmsi: str
+    force: bool = Field(False, description="Bypass alert cooldown deduplication")
+

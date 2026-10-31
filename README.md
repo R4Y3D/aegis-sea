@@ -179,7 +179,7 @@ flowchart LR
 | :---: | :---: | :---: | :--- | :---: |
 | **Phase 0** | **Oct 10 – Oct 17** | ✅ **Complete** | Environment setup, R-tree cable indexing (`shapely`/`rtree`), literature review | **Related Work (Oct 17)** |
 | **Phase 1** | **Oct 18 – Oct 26** | ✅ **Complete** | Formalize Attacker Model, build Telemetry Trust Layer & scoring engine in `aegis-engine` | *Core Engine Verification* |
-| **Phase 2** | **Oct 27 – Nov 09** | 🟡 **In Progress** | Adversarial **Red Team Simulation Testbed** (injecting spoofed tracks, ghost ships, dark approaches) | **Progress Report (Oct 31)** |
+| **Phase 2** | **Oct 27 – Nov 09** | ✅ **Complete** | Adversarial **Red Team Simulation Testbed**, 3D visual threat layer, and automated BGP evacuation dispatcher | **Progress Report (Oct 31)** |
 | **Phase 3** | **Nov 10 – Dec 02** | ⏳ Upcoming | Benchmark **Naive Detectors vs. Aegis-Sea Trust-Aware Detector** under spoofing; Research Paper | **Draft Report (Dec 03)** |
 | **Phase 4** | **Dec 03 – Dec 05** | ⏳ Upcoming | High-definition screencast demo video, defense slide deck | **Final Presentation (Dec 05)** |
 
@@ -199,13 +199,13 @@ flowchart LR
 - [x] Integrate Node.js reverse proxy (`server/providers/aegis.js`) to seamlessly route `/api/threats`.
 - [x] Achieve 100% test pass rate across 29 automated unit and API integration tests.
 
-### Phase 2: Red Team Simulation Testbed & Visual Threat Layer `Oct 27 – Nov 9` *(In Progress)*
+### Phase 2: Red Team Simulation Testbed & Visual Threat Layer `Oct 27 – Nov 9` *(Complete)*
 - [x] Build adversarial **Red Team simulation testbed** (`aegis.simulation`) and CLI runner (`run_simulation.py`).
 - [x] Author test scenarios injecting spoofed GPS jumps, Baltic Sea anchor drag sabotage (*Yi Peng 3* profile), and phantom ghost ship decoys.
 - [x] Benchmark baseline naive geofencing (33.3% accuracy) against Aegis-Sea trust layer (100% accuracy) with documented results (`docs/SIMULATION_RESULTS.md`).
-- [x] Verify 34 automated unit, API, and simulation tests passing across the Python engine.
-- [ ] Connect visual threat halos and tactical alert banner to the 3D Cesium globe in God's Eye View.
-- [ ] Implement `AlertDispatcher` with SOAR JSON webhook emission.
+- [x] Verify 42 automated unit, API, dispatcher, and simulation tests passing across the Python engine.
+- [x] Connect visual threat halos, adversary ship models, seabed anchor drag trenches, and tactical alert banner to the 3D Cesium globe in God's Eye View.
+- [x] Implement `AlertDispatcher` with SOAR JSON webhook emission and pre-computed BGP evacuation payloads (`aegis.dispatcher`).
 - [ ] Complete and submit the **Progress Report** (due Oct 31).
 
 ### Phase 3: Resilient Benchmarking & Research Paper Authoring `Nov 10 – Dec 3`
