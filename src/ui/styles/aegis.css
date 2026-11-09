@@ -17,6 +17,7 @@
   font-size: 11px;
   color: #f1f5f9;
   max-width: 90vw;
+  pointer-events: auto !important;
 }
 
 .aegis-hud-main {
@@ -304,18 +305,23 @@
 }
 
 .aegis-hud-toggle {
-  background: none;
-  border: none;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 4px;
   color: #94a3b8;
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: auto !important;
+  transition: all 0.15s ease;
 }
 
 .aegis-hud-toggle:hover {
   color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.5);
 }
 
 .aegis-hud-drawer {
@@ -324,6 +330,15 @@
   padding: 10px 14px;
   max-height: 240px;
   overflow-y: auto;
+  pointer-events: auto !important;
+}
+
+.aegis-hud-drawer[hidden] {
+  display: none !important;
+}
+
+.aegis-sim-controller[hidden] {
+  display: none !important;
 }
 
 .aegis-drawer-header {
@@ -348,6 +363,35 @@
 }
 
 /* Aegis-Sea Tactical Subsea Defense Panel Styles */
+
+#aegis-panel {
+  pointer-events: auto !important;
+  box-sizing: border-box;
+}
+
+#aegis-panel,
+#aegis-panel * {
+  pointer-events: auto !important;
+}
+
+#aegis-panel:not(.collapsed) {
+  width: var(--panel-expanded-width, 360px);
+}
+
+#aegis-panel.collapsed {
+  width: var(--left-collapsed-width, 176px);
+}
+
+#aegis-panel.collapsed .cyber-panel-body {
+  display: none !important;
+}
+
+#aegis-panel.collapsed .aegis-panel-inner {
+  height: 50px;
+  min-height: 50px;
+  overflow: hidden;
+  padding: 8px 12px;
+}
 
 #aegis-panel .aegis-panel-inner {
   display: flex;
@@ -448,8 +492,10 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  max-height: 180px;
+  max-height: 190px;
   overflow-y: auto;
+  pointer-events: auto !important;
+  touch-action: pan-y;
 }
 
 .aegis-empty-state {
@@ -467,6 +513,7 @@
   border-left: 3px solid #38bdf8;
   border-radius: 3px;
   cursor: pointer;
+  pointer-events: auto !important;
   transition: all 0.15s ease-in-out;
 }
 

@@ -42,7 +42,8 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
   // Drawer toggle logic
   let isDrawerOpen = false;
   if (hudToggleBtn && hudDrawer) {
-    hudToggleBtn.addEventListener('click', () => {
+    hudToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       isDrawerOpen = !isDrawerOpen;
       hudDrawer.hidden = !isDrawerOpen;
       if (toggleIcon) toggleIcon.textContent = isDrawerOpen ? '▲' : '▼';
