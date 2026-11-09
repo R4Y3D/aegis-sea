@@ -113,6 +113,18 @@ export function createSelection({
           clearVesselInspection();
       },
     );
+
+    state.externalSelectRemover = (e) => {
+      const mmsi = e.detail?.mmsi;
+      if (!mmsi) return;
+      const record = state.records.byMmsi.get(String(mmsi));
+      if (record) {
+        selectAndFocusVessel(record);
+      }
+    };
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+      window.addEventListener('gev:select-vessel-by-mmsi', state.externalSelectRemover);
+    }
   }
 
   /** Select one live vessel and request one UI-owned camera transfer. */
@@ -149,6 +161,10 @@ export function createSelection({
     if (state.trackedEntityRemover) {
       state.trackedEntityRemover();
       state.trackedEntityRemover = null;
+    }
+    if (state.externalSelectRemover && typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+      window.removeEventListener('gev:select-vessel-by-mmsi', state.externalSelectRemover);
+      state.externalSelectRemover = null;
     }
   }
 

@@ -682,13 +682,40 @@ export function createAegisThreatLayer(viewer) {
   function flyToThreat(threat) {
     if (!viewer || !threat || !threat.coordinates) return;
     const mmsi = String(threat.mmsi);
-    let archetype = 'anchor_drag';
-    if (mmsi === '999000102' || threat.telemetry_trust?.is_jump) {
-      archetype = 'gps_jump';
-    } else if (mmsi === '999000103' || threat.telemetry_trust?.is_ghost_candidate) {
-      archetype = 'ghost_decoy';
+    const isSimulated = ['412543000', '999000102', '999000103'].includes(mmsi);
+
+    if (isSimulated) {
+      let archetype = 'anchor_drag';
+      if (mmsi === '999000102' || threat.telemetry_trust?.is_jump) {
+        archetype = 'gps_jump';
+      } else if (mmsi === '999000103' || threat.telemetry_trust?.is_ghost_candidate) {
+        archetype = 'ghost_decoy';
+      }
+      startScenario(archetype, threat);
+      return;
     }
-    startScenario(archetype, threat);
+
+    // Real vessel threat in corridor: fly directly to the actual vessel
+    const lon = threat.coordinates.lon;
+    const lat = threat.coordinates.lat;
+    if (Number.isFinite(lon) && Number.isFinite(lat) && viewer.camera) {
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(lon, lat, 14000),
+        orientation: {
+          heading: Cesium.Math.toRadians(0),
+          pitch: Cesium.Math.toRadians(-45),
+          roll: 0.0,
+        },
+        duration: 2.0,
+      });
+
+      // Dispatch event to select the vessel so its full card opens on the 3D globe
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(
+          new CustomEvent('gev:select-vessel-by-mmsi', { detail: { mmsi } }),
+        );
+      }
+    }
   }
 
   // Animation Frame Loop

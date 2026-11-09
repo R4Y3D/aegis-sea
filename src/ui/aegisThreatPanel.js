@@ -247,12 +247,11 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
       aegisThreatService._notify();
     }
 
-    // Automatically reveal drawer and trigger cinematic simulation
+    // Automatically reveal simulation controller and trigger cinematic simulation
     if (assessment) {
-      if (hudDrawer) {
-        hudDrawer.hidden = false;
-        isDrawerOpen = true;
-        if (toggleIcon) toggleIcon.textContent = '▲';
+      const simCtrl = document.getElementById('aegis-sim-controller');
+      if (simCtrl) {
+        simCtrl.hidden = false;
       }
       if (aegisLayer && typeof aegisLayer.startScenario === 'function') {
         aegisLayer.startScenario(type, assessment);
