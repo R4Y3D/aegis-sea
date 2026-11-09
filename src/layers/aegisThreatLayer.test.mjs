@@ -63,3 +63,102 @@ test('AegisThreatService: simulation switching isolates active scenario without 
   aegisThreatService.clearSimulations();
   assert.strictEqual(aegisThreatService.activeSimulations.size, 0);
 });
+
+test('AegisThreat: buildSelectedVesselCard renders cyber-physical threat intelligence for CPZ vessels', async () => {
+  const { aegisThreatService } = await import('../services/aegisThreatService.js');
+  const { buildSelectedVesselCard } = await import('../data/aisLiveVessels.js');
+
+  const mmsi = '273615060';
+  const normalCpzThreat = {
+    mmsi,
+    vessel_name: 'VYACHESL.PAYSHCHIKOV',
+    threat_level: 'NORMAL',
+    threat_score: 29.14,
+    closest_cable: {
+      cable_id: 'finland-estonia-3-eesf-3',
+      cable_name: 'Finland-Estonia 3 (EESF-3)',
+      distance_nm: 1.3067,
+      in_cpz: true,
+      in_alert_corridor: true,
+    },
+    recommended_action: 'NONE',
+  };
+
+  aegisThreatService.threatsByMmsi.set(mmsi, normalCpzThreat);
+
+  const mockRecord = {
+    mmsi,
+    name: 'VYACHESL.PAYSHCHIKOV',
+    type: 'Cargo',
+    speed: 8.4,
+    heading: 75,
+    course: 75,
+    lat: 59.7242,
+    lon: 24.51613,
+    lastPositionUtc: '2026-11-09T02:08:53Z',
+  };
+
+  const card = buildSelectedVesselCard(mockRecord);
+  assert.ok(card);
+  assert.strictEqual(card.selected, true);
+  assert.strictEqual(card.accent, '#06b6d4'); // Cyan accent for monitored corridor transit
+
+  const hasScore = card.details.some((d) => d.includes('AEGIS: NORMAL (Score 29.1/100)'));
+  assert.ok(hasScore, `Expected Aegis score line in card.details: ${JSON.stringify(card.details)}`);
+
+  const hasCable = card.details.some((d) => d.includes('Finland-Estonia 3 (EESF-3) (1.3 NM · Inside CPZ)'));
+  assert.ok(hasCable, `Expected cable distance and CPZ badge in card.details: ${JSON.stringify(card.details)}`);
+
+  const hasTransit = card.details.some((d) => d.includes('Transit: Normal Speed (8.4 kn)'));
+  assert.ok(hasTransit, `Expected normal transit speed line: ${JSON.stringify(card.details)}`);
+
+  // Clean up
+  aegisThreatService.threatsByMmsi.delete(mmsi);
+});
+
+test('AegisThreat: buildSelectedVesselCard renders CRITICAL threat alert and SOAR action', async () => {
+  const { aegisThreatService } = await import('../services/aegisThreatService.js');
+  const { buildSelectedVesselCard } = await import('../data/aisLiveVessels.js');
+
+  const mmsi = '412543000';
+  const criticalThreat = {
+    mmsi,
+    vessel_name: 'Yi Peng 3',
+    threat_level: 'CRITICAL',
+    threat_score: 88.9,
+    closest_cable: {
+      cable_id: 'c-lion1',
+      cable_name: 'C-Lion1 (Baltic Subsea Cable)',
+      distance_nm: 0.38,
+      in_cpz: true,
+      in_alert_corridor: true,
+    },
+    recommended_action: 'TRIGGER_PREEMPTIVE_FAILOVER',
+  };
+
+  aegisThreatService.threatsByMmsi.set(mmsi, criticalThreat);
+
+  const mockRecord = {
+    mmsi,
+    name: 'Yi Peng 3',
+    type: 'Bulk Carrier',
+    speed: 1.2,
+    heading: 205,
+    course: 205,
+    lat: 60.05,
+    lon: 25.02,
+    lastPositionUtc: '2026-11-09T02:08:53Z',
+  };
+
+  const card = buildSelectedVesselCard(mockRecord);
+  assert.strictEqual(card.accent, '#ef4444'); // Red accent for critical danger
+
+  const hasCrit = card.details.some((d) => d.includes('🚨 AEGIS: CRITICAL (Score 88.9/100)'));
+  assert.ok(hasCrit, `Expected critical threat line in card: ${JSON.stringify(card.details)}`);
+
+  const hasAction = card.details.some((d) => d.includes('⚡ Action: TRIGGER_PREEMPTIVE_FAILOVER'));
+  assert.ok(hasAction, `Expected failover action in card: ${JSON.stringify(card.details)}`);
+
+  // Clean up
+  aegisThreatService.threatsByMmsi.delete(mmsi);
+});

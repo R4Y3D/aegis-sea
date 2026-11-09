@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Upstream Node.js feed settings
-    node_server_url: str = "http://127.0.0.1:4173"
+    node_server_url: str = "http://localhost:4173"
     poll_interval_seconds: float = 30.0
 
     # Geospatial thresholds (Nautical Miles)

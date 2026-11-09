@@ -20,11 +20,20 @@ export function createCards({
     // Pinned vessels missing from recent refreshes get a stale marker
     const stale = (record.missedRefreshes || 0) > 0;
     el.classList.add('active');
-    el.textContent = [
+    const lines = [
       `AIS: ${trimHudValue(record.name, 32)}`,
       `${trimHudValue(record.type || 'VESSEL', 24)}  SPD: ${formatSpeed(record.speed)}  HDG: ${formatHeading(record.heading ?? record.course)}`,
       `MMSI: ${record.mmsi || '--'}  ${formatPositionTime(record)}${stale ? '  · STALE' : ''}`,
-    ].join('\n');
+    ];
+
+    const threat = record?.mmsi ? aegisThreatService.getThreatForMmsi(record.mmsi) : null;
+    if (threat && threat.threat_level) {
+      const scoreStr = Number(threat.threat_score || 0).toFixed(1);
+      const cableStr = threat.closest_cable ? ` · ${trimHudValue(threat.closest_cable.cable_name, 22)} (${Number(threat.closest_cable.distance_nm || 0).toFixed(1)} NM)` : '';
+      lines.push(`AEGIS: ${threat.threat_level} (${scoreStr}/100)${cableStr}`);
+    }
+
+    el.textContent = lines.join('\n');
   }
 
   function resetSelectedVesselHud() {
@@ -110,17 +119,40 @@ export function createCards({
 
     let accent = accentForVesselType(record.type);
     const threat = record?.mmsi ? aegisThreatService.getThreatForMmsi(record.mmsi) : null;
-    if (threat && threat.threat_level && threat.threat_level !== 'NORMAL') {
-      if (threat.threat_level === 'CRITICAL') accent = '#ef4444';
-      else if (threat.threat_level === 'HIGH') accent = '#f97316';
-      else if (threat.threat_level === 'ADVISORY') accent = '#eab308';
-
-      details.unshift(`⚠️ AEGIS: ${threat.threat_level} (Score ${Number(threat.threat_score || 0).toFixed(1)}/100)`);
-      if (threat.closest_cable) {
-        details.push(`🛡️ Target: ${threat.closest_cable.cable_name} (${Number(threat.closest_cable.distance_nm || 0).toFixed(1)} NM)`);
+    if (record?.mmsi && !threat) {
+      aegisThreatService.fetchThreatForVessel(record);
+    }
+    if (threat && threat.threat_level) {
+      const score = Number(threat.threat_score || 0).toFixed(1);
+      if (threat.threat_level === 'CRITICAL') {
+        accent = '#ef4444';
+        details.unshift(`🚨 AEGIS: CRITICAL (Score ${score}/100)`);
+      } else if (threat.threat_level === 'HIGH') {
+        accent = '#f97316';
+        details.unshift(`⚠️ AEGIS: HIGH (Score ${score}/100)`);
+      } else if (threat.threat_level === 'ADVISORY') {
+        accent = '#eab308';
+        details.unshift(`⚠️ AEGIS: ADVISORY (Score ${score}/100)`);
+      } else {
+        if (threat.closest_cable && (threat.closest_cable.in_cpz || threat.closest_cable.in_alert_corridor || threat.closest_cable.distance_nm <= 9.0)) {
+          accent = '#06b6d4';
+          details.unshift(`🛡️ AEGIS: NORMAL (Score ${score}/100)`);
+        } else {
+          details.unshift(`🛡️ AEGIS: CLEAR (Score ${score}/100)`);
+        }
       }
+
+      if (threat.closest_cable && (threat.closest_cable.distance_nm <= 9.0 || threat.closest_cable.in_alert_corridor)) {
+        const cpzBadge = threat.closest_cable.in_cpz ? ' · Inside CPZ' : '';
+        details.push(`🛡️ Cable: ${threat.closest_cable.cable_name} (${Number(threat.closest_cable.distance_nm || 0).toFixed(1)} NM${cpzBadge})`);
+      } else if (threat.threat_level === 'NORMAL') {
+        details.push('🛡️ Subsea Corridors: Clear (>9 NM)');
+      }
+
       if (threat.recommended_action && threat.recommended_action !== 'NONE') {
         details.push(`⚡ Action: ${threat.recommended_action}`);
+      } else if (threat.threat_level === 'NORMAL' && threat.closest_cable && threat.closest_cable.in_cpz) {
+        details.push(`Transit: Normal Speed (${Number(record.speed || 0).toFixed(1)} kn)`);
       }
     }
 
@@ -196,6 +228,16 @@ export function createCards({
     if (Number.isNaN(date.getTime())) return 'POS: LIVE';
     return `POS: ${date.toISOString().slice(11, 19)}Z`;
   }
+  if (typeof aegisThreatService?.subscribe === 'function') {
+    aegisThreatService.subscribe(() => {
+      const selected = state.selectedRecord;
+      if (selected) {
+        updateSelectedVesselHud(selected);
+        components.rendering?.updateVisibility?.(true);
+      }
+    });
+  }
+
   return {
     updateSelectedVesselHud,
     resetSelectedVesselHud,

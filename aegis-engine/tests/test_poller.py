@@ -170,3 +170,38 @@ async def test_poll_once_connection_error_graceful(poller, monkeypatch):
     count = await poller.poll_once()
     assert count == 0
     assert poller._last_poll_status == "UNREACHABLE"
+
+
+@pytest.mark.asyncio
+async def test_fetch_and_assess_vessel_on_demand(poller, monkeypatch):
+    """Verifies on-demand fetching and scoring of an unmonitored vessel by MMSI."""
+    mock_payload = {
+        "rows": [
+            {
+                "mmsi": "273615060",
+                "name": "VYACHESL.PAYSHCHIKOV",
+                "lat": 59.7242,
+                "lon": 24.51613,
+                "speed": 8.3,
+                "course": 75.0,
+                "heading": 75,
+                "last_position_epoch": 1731118133,
+            }
+        ]
+    }
+
+    async def mock_get(self, url, **kwargs):
+        request = httpx.Request("GET", url)
+        return httpx.Response(200, json=mock_payload, request=request)
+
+    monkeypatch.setattr(httpx.AsyncClient, "get", mock_get)
+
+    assert poller.get_assessment("273615060") is None
+    assessment = await poller.fetch_and_assess_vessel("273615060")
+    assert assessment is not None
+    assert assessment.mmsi == "273615060"
+    assert assessment.vessel_name == "VYACHESL.PAYSHCHIKOV"
+    assert assessment.closest_cable is not None
+    assert assessment.closest_cable.in_cpz is True
+    # Verify cached in memory
+    assert poller.get_assessment("273615060") is not None

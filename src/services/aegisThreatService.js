@@ -17,6 +17,7 @@ class AegisThreatService {
       threats: [],
     };
     this.activeSimulations = new Map();
+    this._pendingFetches = new Map();
     this.isEngineOnline = false;
     this.lastUpdated = null;
     this._pollTimer = null;
@@ -127,6 +128,68 @@ class AegisThreatService {
   getThreatForMmsi(mmsi) {
     if (!mmsi) return null;
     return this.threatsByMmsi.get(String(mmsi)) || null;
+  }
+
+  /**
+   * Retrieves or asynchronously fetches the threat assessment for a vessel.
+   * If available in memory, returns immediately.
+   * Otherwise fetches from /api/threats/${mmsi} or evaluates via /api/evaluate.
+   */
+  async fetchThreatForVessel(record) {
+    if (!record || !record.mmsi) return null;
+    const mmsi = String(record.mmsi);
+    const existing = this.threatsByMmsi.get(mmsi);
+    if (existing) return existing;
+
+    if (this._pendingFetches.has(mmsi)) {
+      return this._pendingFetches.get(mmsi);
+    }
+
+    const fetchPromise = (async () => {
+      try {
+        const resp = await fetch(`/api/threats/${mmsi}`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (resp.ok) {
+          const assessment = await resp.json();
+          this.threatsByMmsi.set(mmsi, assessment);
+          this._notify();
+          return assessment;
+        }
+
+        // If not found in poller memory and record has coordinates, evaluate directly
+        if (record.lat != null && record.lon != null) {
+          const evalResp = await fetch('/api/evaluate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              mmsi,
+              lat: Number(record.lat),
+              lon: Number(record.lon),
+              sog: Number(record.speed || 0.0),
+              cog: Number(record.course || 0.0),
+              heading: record.heading != null ? Number(record.heading) : null,
+              name: record.name || `MMSI ${mmsi}`,
+              ship_type: record.type || null,
+            }),
+          });
+          if (evalResp.ok) {
+            const assessment = await evalResp.json();
+            this.threatsByMmsi.set(mmsi, assessment);
+            this._notify();
+            return assessment;
+          }
+        }
+      } catch (err) {
+        console.warn(`[AegisThreatService] Failed to fetch threat assessment for MMSI ${mmsi}:`, err);
+      } finally {
+        this._pendingFetches.delete(mmsi);
+      }
+      return null;
+    })();
+
+    this._pendingFetches.set(mmsi, fetchPromise);
+    return fetchPromise;
   }
 
   _updateOverviewCounts() {

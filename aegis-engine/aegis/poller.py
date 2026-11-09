@@ -61,6 +61,7 @@ class AISPoller:
         self._is_running: bool = False
         self._last_poll_epoch: Optional[float] = None
         self._last_poll_status: str = "INITIALIZING"
+        self._working_url: Optional[str] = None
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
@@ -184,65 +185,136 @@ class AISPoller:
     async def poll_once(self) -> int:
         """Executes a single poll cycle against the upstream Node.js live vessel endpoint."""
         now = datetime.now(timezone.utc).timestamp()
-        url = f"{self.config.node_server_url.rstrip('/')}/api/vessels"
         client = await self._get_client()
 
-        try:
-            response = await client.get(url)
-            if response.status_code != 200:
-                logger.warning(
-                    f"Upstream vessel feed returned HTTP {response.status_code}"
-                )
-                self._last_poll_status = f"HTTP_{response.status_code}"
-                return 0
+        candidates = []
+        if self._working_url:
+            candidates.append(self._working_url)
+        for base in [self.config.node_server_url, "http://localhost:4173", "http://127.0.0.1:4173", "http://[::1]:4173"]:
+            cleaned = base.rstrip('/')
+            if cleaned not in candidates:
+                candidates.append(cleaned)
 
-            data = response.json()
-            rows = data.get("rows", [])
-            count = 0
-
-            for row in rows:
-                mmsi = str(row.get("mmsi") or "").strip()
-                lat = row.get("lat")
-                lon = row.get("lon")
-                if not mmsi or lat is None or lon is None:
+        last_error = None
+        for base_url in candidates:
+            url = f"{base_url}/api/vessels"
+            try:
+                response = await client.get(url)
+                if response.status_code != 200:
+                    logger.warning(
+                        f"Upstream vessel feed at {url} returned HTTP {response.status_code}"
+                    )
+                    self._last_poll_status = f"HTTP_{response.status_code}"
                     continue
 
-                sog = float(row.get("speed", 0.0) or 0.0)
-                cog = float(row.get("course", 0.0) or 0.0)
-                heading_raw = row.get("heading")
-                heading = float(heading_raw) if heading_raw is not None else None
-                name = row.get("name") or f"MMSI {mmsi}"
-                imo = str(row.get("imo") or "") or None
-                ship_type = row.get("type") or None
-                epoch = float(row.get("last_position_epoch") or now)
+                data = response.json()
+                rows = data.get("rows", [])
+                count = 0
 
-                self.ingest_vessel_telemetry(
-                    mmsi=mmsi,
-                    lat=float(lat),
-                    lon=float(lon),
-                    sog=sog,
-                    cog=cog,
-                    heading=heading,
-                    name=name,
-                    imo=imo,
-                    ship_type=ship_type,
-                    timestamp_epoch=epoch,
-                )
-                count += 1
+                for row in rows:
+                    mmsi = str(row.get("mmsi") or "").strip()
+                    lat = row.get("lat")
+                    lon = row.get("lon")
+                    if not mmsi or lat is None or lon is None:
+                        continue
 
-            self._last_poll_epoch = now
-            self._last_poll_status = "OK"
-            logger.info(f"Polled and assessed {count} live vessels from {url}")
-            return count
+                    sog = float(row.get("speed", 0.0) or 0.0)
+                    cog = float(row.get("course", 0.0) or 0.0)
+                    heading_raw = row.get("heading")
+                    heading = float(heading_raw) if heading_raw is not None else None
+                    name = row.get("name") or f"MMSI {mmsi}"
+                    imo = str(row.get("imo") or "") or None
+                    ship_type = row.get("type") or None
+                    epoch = float(row.get("last_position_epoch") or now)
 
-        except (httpx.ConnectError, httpx.TimeoutException) as exc:
-            logger.warning(f"Could not reach upstream vessel feed at {url}: {exc}")
-            self._last_poll_status = "UNREACHABLE"
-            return 0
-        except Exception as exc:
-            logger.error(f"Unexpected error during AIS poll cycle: {exc}", exc_info=True)
-            self._last_poll_status = "ERROR"
-            return 0
+                    self.ingest_vessel_telemetry(
+                        mmsi=mmsi,
+                        lat=float(lat),
+                        lon=float(lon),
+                        sog=sog,
+                        cog=cog,
+                        heading=heading,
+                        name=name,
+                        imo=imo,
+                        ship_type=ship_type,
+                        timestamp_epoch=epoch,
+                    )
+                    count += 1
+
+                self._working_url = base_url
+                self._last_poll_epoch = now
+                self._last_poll_status = "OK"
+                logger.info(f"Polled and assessed {count} live vessels from {url}")
+                return count
+
+            except (httpx.ConnectError, httpx.TimeoutException) as exc:
+                last_error = exc
+                continue
+            except Exception as exc:
+                logger.error(f"Unexpected error during AIS poll cycle at {url}: {exc}", exc_info=True)
+                self._last_poll_status = "ERROR"
+                return 0
+
+        logger.warning(f"Could not reach upstream vessel feed at any candidate URLs: {last_error}")
+        self._last_poll_status = "UNREACHABLE"
+        return 0
+
+    async def fetch_and_assess_vessel(self, mmsi: str) -> Optional[ThreatAssessment]:
+        """Tries to find and score a vessel on-demand from the upstream AIS feed if not in memory."""
+        mmsi_str = str(mmsi).strip()
+        existing = self.get_assessment(mmsi_str)
+        if existing:
+            return existing
+
+        now = datetime.now(timezone.utc).timestamp()
+        client = await self._get_client()
+
+        candidates = []
+        if self._working_url:
+            candidates.append(self._working_url)
+        for base in [self.config.node_server_url, "http://localhost:4173", "http://127.0.0.1:4173", "http://[::1]:4173"]:
+            cleaned = base.rstrip('/')
+            if cleaned not in candidates:
+                candidates.append(cleaned)
+
+        for base_url in candidates:
+            url = f"{base_url}/api/vessels"
+            try:
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    self._working_url = base_url
+                    data = resp.json()
+                    rows = data.get("rows", [])
+                    for row in rows:
+                        if str(row.get("mmsi") or "").strip() == mmsi_str:
+                            lat = row.get("lat")
+                            lon = row.get("lon")
+                            if lat is not None and lon is not None:
+                                sog = float(row.get("speed", 0.0) or 0.0)
+                                cog = float(row.get("course", 0.0) or 0.0)
+                                heading_raw = row.get("heading")
+                                heading = float(heading_raw) if heading_raw is not None else None
+                                name = row.get("name") or f"MMSI {mmsi_str}"
+                                imo = str(row.get("imo") or "") or None
+                                ship_type = row.get("type") or None
+                                epoch = float(row.get("last_position_epoch") or now)
+                                return self.ingest_vessel_telemetry(
+                                    mmsi=mmsi_str,
+                                    lat=float(lat),
+                                    lon=float(lon),
+                                    sog=sog,
+                                    cog=cog,
+                                    heading=heading,
+                                    name=name,
+                                    imo=imo,
+                                    ship_type=ship_type,
+                                    timestamp_epoch=epoch,
+                                )
+                    return None
+            except Exception as e:
+                logger.debug(f"Failed to fetch vessel on-demand from {url}: {e}")
+                continue
+        return None
 
     async def start_polling(self):
         """Starts the asynchronous polling background task."""
@@ -328,6 +400,8 @@ class AISPoller:
                 norm_count += 1
 
         active_threats.sort(key=lambda x: x.threat_score, reverse=True)
+        if len(active_threats) > 100:
+            active_threats = active_threats[:100]
 
         return ThreatOverview(
             monitored_vessels_total=total,

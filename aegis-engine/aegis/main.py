@@ -130,6 +130,8 @@ async def get_vessel_threat(mmsi: str):
     poller: AISPoller = app.state.poller
     assessment = poller.get_assessment(mmsi)
     if not assessment:
+        assessment = await poller.fetch_and_assess_vessel(mmsi)
+    if not assessment:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Vessel with MMSI '{mmsi}' not currently tracked in active memory",
