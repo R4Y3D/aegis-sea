@@ -31,10 +31,16 @@ export function bindPanelDisclosure({
   }
   const scope = listenerScope();
   for (const button of new Set(buttons)) {
-    scope.listen(button, 'click', () => {
+    scope.listen(button, 'click', (event) => {
+      event.stopPropagation();
       onChange(!panel.classList.contains('collapsed'), { explicit: true });
     });
   }
+  scope.listen(panel, 'click', () => {
+    if (panel.classList.contains('collapsed')) {
+      onChange(false, { explicit: true });
+    }
+  });
   scope.listen(panel, 'keydown', onEscape);
   return { destroy: () => scope.destroy() };
 }

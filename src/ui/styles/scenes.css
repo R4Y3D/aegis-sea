@@ -55,6 +55,7 @@
 
 #left-panel-stack > #data-panel:not(.collapsed),
 #left-panel-stack > #cctv-panel:not(.collapsed),
+#left-panel-stack > #aegis-panel:not(.collapsed),
 #left-panel-stack > #scene-panel:not(.collapsed) {
   box-sizing: border-box;
   flex: 0 1 var(--left-panel-allocated-height, auto);
@@ -67,7 +68,7 @@
  * the canonical control order and center their combined stack at 50vh.
  */
 #left-panel-stack.layout-tail
-  > :is(#data-panel, #cctv-panel, #scene-panel):not(.collapsed) {
+  > :is(#data-panel, #cctv-panel, #aegis-panel, #scene-panel):not(.collapsed) {
   box-sizing: border-box;
   flex: 0 0 var(--left-panel-allocated-height);
   height: var(--left-panel-allocated-height);
@@ -76,6 +77,7 @@
 
 #left-panel-stack > #data-panel:not(.collapsed) .data-panel-inner,
 #left-panel-stack > #cctv-panel:not(.collapsed) .cctv-panel-inner,
+#left-panel-stack > #aegis-panel:not(.collapsed) .aegis-panel-inner,
 #left-panel-stack > #scene-panel:not(.collapsed) .scene-panel-inner {
   height: 100%;
   max-height: 100%;
@@ -86,6 +88,7 @@
 }
 
 #left-panel-stack > #cctv-panel:not(.collapsed) .cctv-panel-inner,
+#left-panel-stack > #aegis-panel:not(.collapsed) .aegis-panel-inner,
 #left-panel-stack > #scene-panel:not(.collapsed) .scene-panel-inner {
   overflow-y: auto;
   scrollbar-gutter: stable;
@@ -420,6 +423,7 @@
 
 #data-panel.collapsed,
 #cctv-panel.collapsed,
+#aegis-panel.collapsed,
 #scene-panel.collapsed {
   width: var(--left-collapsed-width);
 }
@@ -431,6 +435,7 @@
 #data-panel.collapsed .panel-title,
 #cctv-panel.collapsed .panel-title,
 #radio-panel.collapsed .panel-title,
+#aegis-panel.collapsed .panel-title,
 #scene-panel.collapsed .panel-title {
   font-size: 8px;
   letter-spacing: 1.8px;
@@ -440,6 +445,7 @@
 #data-panel.collapsed .data-panel-inner,
 #cctv-panel.collapsed .cctv-panel-inner,
 #radio-panel.collapsed .radio-panel-inner,
+#aegis-panel.collapsed .aegis-panel-inner,
 #scene-panel.collapsed .scene-panel-inner,
 #param-slider-panel.collapsed,
 #location-bar.collapsed .location-inner {
@@ -451,6 +457,7 @@
 #cctv-panel.collapsed .panel-header,
 #radio-panel.collapsed .panel-header,
 #global-context-panel.collapsed .panel-header,
+#aegis-panel.collapsed .panel-header,
 #scene-panel.collapsed .panel-header,
 #param-slider-panel.collapsed .param-panel-header {
   margin-bottom: 2px;

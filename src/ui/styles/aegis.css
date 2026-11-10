@@ -374,12 +374,57 @@
   pointer-events: auto !important;
 }
 
+#aegis-panel .panel-glow {
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(
+    ellipse at center,
+    var(--accent-dim) 0%,
+    transparent 60%
+  );
+  filter: blur(20px);
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+.aegis-panel-inner {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--panel-radius);
+  padding: 14px 16px 12px;
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: min(
+    620px,
+    calc(100vh - var(--left-stack-top) - var(--left-stack-gap) - 36px)
+  );
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
 #aegis-panel:not(.collapsed) {
   width: var(--panel-expanded-width, 360px);
 }
 
+#aegis-panel:not(.collapsed) .aegis-title-short {
+  display: none;
+}
+
+#aegis-panel:not(.collapsed) .aegis-title-full {
+  display: inline;
+}
+
 #aegis-panel.collapsed {
   width: var(--left-collapsed-width, 176px);
+  cursor: pointer;
 }
 
 #aegis-panel.collapsed .cyber-panel-body {
@@ -387,22 +432,49 @@
 }
 
 #aegis-panel.collapsed .aegis-panel-inner {
+  box-sizing: border-box;
   height: 50px;
   min-height: 50px;
   overflow: hidden;
-  padding: 8px 12px;
+  padding: 14px 16px 10px;
+  cursor: pointer;
 }
 
-#aegis-panel .aegis-panel-inner {
+#aegis-panel.collapsed .panel-header {
+  margin-bottom: 2px;
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px 14px;
-  background: rgba(10, 16, 26, 0.92);
-  border: 1px solid rgba(56, 189, 248, 0.18);
-  border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+#aegis-panel.collapsed .panel-title {
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+#aegis-panel.collapsed .aegis-title-full {
+  display: none;
+}
+
+#aegis-panel.collapsed .aegis-title-short {
+  display: inline;
+}
+
+#aegis-panel.collapsed .panel-divider {
+  flex: 1;
+  min-width: 8px;
+  height: 1px;
+}
+
+#aegis-panel.collapsed .panel-collapse-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
 }
 
 .aegis-status-bar {

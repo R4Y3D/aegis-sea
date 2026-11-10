@@ -196,6 +196,7 @@
   :is(
     .data-panel-inner,
     .cctv-panel-inner,
+    .aegis-panel-inner,
     .weather-panel-inner,
     .recent-imagery-panel-inner,
     .street-level-panel-inner,
@@ -217,6 +218,7 @@
   :is(
     .data-panel-inner,
     .cctv-panel-inner,
+    .aegis-panel-inner,
     .weather-panel-inner,
     .recent-imagery-panel-inner,
     .street-level-panel-inner,
@@ -299,6 +301,7 @@
   :is(
     .data-panel-inner,
     .cctv-panel-inner,
+    .aegis-panel-inner,
     .weather-panel-inner,
     .recent-imagery-panel-inner,
     .street-level-panel-inner,
@@ -315,6 +318,7 @@
   :is(
     .data-panel-inner,
     .cctv-panel-inner,
+    .aegis-panel-inner,
     .weather-panel-inner,
     .recent-imagery-panel-inner,
     .street-level-panel-inner,
@@ -339,6 +343,7 @@
   :is(
     .data-panel-inner,
     .cctv-panel-inner,
+    .aegis-panel-inner,
     .weather-panel-inner,
     .recent-imagery-panel-inner,
     .street-level-panel-inner,
@@ -1670,7 +1675,20 @@
 
   :root[data-ui-theme='cyber']
     #left-panel-stack
+    > #aegis-panel {
+    --panel-expanded-width: var(--cyber-panel-width);
+    width: var(--panel-expanded-width);
+  }
+
+  :root[data-ui-theme='cyber']
+    #left-panel-stack
     > :is(#data-panel, #scene-panel).collapsed {
+    width: var(--cyber-panel-collapsed-width);
+  }
+
+  :root[data-ui-theme='cyber']
+    #left-panel-stack
+    > #aegis-panel.collapsed {
     width: var(--cyber-panel-collapsed-width);
   }
 
@@ -1678,6 +1696,16 @@
     #left-panel-stack
     > :is(#data-panel, #scene-panel).collapsed
     :is(.data-panel-inner, .scene-panel-inner) {
+    box-sizing: border-box;
+    height: 50px;
+    min-height: 50px;
+    overflow: hidden;
+  }
+
+  :root[data-ui-theme='cyber']
+    #left-panel-stack
+    > #aegis-panel.collapsed
+    .aegis-panel-inner {
     box-sizing: border-box;
     height: 50px;
     min-height: 50px;
@@ -1704,7 +1732,7 @@
 
   :root[data-ui-theme='cyber']
     body:not(.cockpit-mode)
-    :is(#data-panel, #scene-panel)
+    :is(#data-panel, #aegis-panel, #scene-panel)
     .panel-collapse-btn {
     width: var(--cyber-panel-control-size);
     min-width: var(--cyber-panel-control-size);
