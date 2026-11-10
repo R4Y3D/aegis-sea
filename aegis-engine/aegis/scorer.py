@@ -41,6 +41,7 @@ class ThreatScorer:
         current_time_epoch: Optional[float] = None,
         entered_corridor_epoch: Optional[float] = None,
         last_seen_epoch: Optional[float] = None,
+        nav_status: Optional[int] = None,
     ) -> ThreatAssessment:
         """Computes a full ThreatAssessment for a vessel contact."""
         now = current_time_epoch or datetime.now(timezone.utc).timestamp()
@@ -71,6 +72,7 @@ class ThreatScorer:
                 vessel_name=name,
                 imo=imo,
                 ship_type=ship_type,
+                nav_status=nav_status,
                 coordinates={"lat": lat, "lon": lon},
                 sog_knots=round(sog, 2),
                 cog_degrees=round(cog, 2),
@@ -85,9 +87,15 @@ class ThreatScorer:
 
         # Step 3: Compute all 6 Individual Threat Factors [0.0, 1.0]
         s_prox = closest_cable.s_prox
+        # Coastal Landing Approach Proximity Dampening:
+        # Near landing stations / port terminals, cables are buried 2-3m and armored;
+        # reduce spatial proximity score unless vessel exhibits active drag deceleration
+        if closest_cable.is_landing_approach and sog <= 3.0:
+            s_prox *= self.config.landing_approach_decay
+
         s_speed = self._compute_speed_score(sog)
-        s_loiter = self._compute_loiter_score(now, entered_corridor_epoch)
-        s_heading = self._compute_heading_score(cog, closest_cable.cable_azimuth_deg)
+        s_loiter = self._compute_loiter_score(now, entered_corridor_epoch, sog=sog)
+        s_heading = self._compute_heading_score(cog, closest_cable.cable_azimuth_deg, sog=sog)
         s_anchor = self._compute_anchor_score(
             sog=sog,
             in_cpz=closest_cable.in_cpz,
@@ -119,6 +127,27 @@ class ThreatScorer:
             + self.config.weight_anchor * s_anchor
             + self.config.weight_dark * s_dark
         )
+
+        # Operational False Alarm Suppression Rules (GeoTrackNet Paper 01 / Bakdi Paper 14)
+        # Rule A: Moored vessel suppression (NavStatus = 5)
+        if nav_status == 5:
+            raw_score = min(20.0, raw_score)
+
+        # Rule B: Stationary vessel cap (sog <= 0.3 kn)
+        if sog <= self.config.speed_min_drag_knots:
+            raw_score = min(25.0, raw_score)
+
+        # Rule C: Corroboration required for CRITICAL tier (GeoTrackNet statistical bound)
+        # To reach CRITICAL (T >= 81), vessel must be in CPZ AND have active anomalous drag/deceleration
+        if self.config.corroboration_required_for_critical and raw_score >= self.config.threshold_critical:
+            has_drag_corroboration = (
+                closest_cable.in_cpz
+                and sog > self.config.speed_min_drag_knots
+                and (s_anchor > 0.0 or (s_speed > 0.7 and s_loiter > 0.4))
+            )
+            if not has_drag_corroboration:
+                raw_score = min(self.config.threshold_critical - 1.0, raw_score)
+
         threat_score = round(min(100.0, max(0.0, raw_score)), 2)
 
         # Step 5: Classify into Threat Level
@@ -137,6 +166,7 @@ class ThreatScorer:
             vessel_name=name,
             imo=imo,
             ship_type=ship_type,
+            nav_status=nav_status,
             coordinates={"lat": lat, "lon": lon},
             sog_knots=round(sog, 2),
             cog_degrees=round(cog, 2),
@@ -156,34 +186,47 @@ class ThreatScorer:
     # -------------------------------------------------------------------------
 
     def _compute_speed_score(self, sog: float) -> float:
-        """Kinematic Speed Anomaly via Logistic Sigmoid.
+        """Kinematic Speed Anomaly via Empirical Anchor-Dragging Band-Pass.
 
-        S_speed(v) = 1 / (1 + exp(k_s * (v_sog - v_mid)))
-        Anchor-dragging velocities (1.0 - 3.5 kn) score > 0.65; cruising (15 kn) scores ~0.0.
+        Forensic ground truth (Praks 2024, Sari 2025) proves that anchor dragging
+        under active engine power occurs between 1.0 kn and 3.5 kn.
+        Stationary or moored vessels (sog <= 0.3 kn) do not drag anchors and score 0.0.
+        Normal merchant transit (> 8.0 kn) decays to 0.0.
         """
+        if sog <= self.config.speed_min_drag_knots:
+            return 0.0
+        if sog < 1.0:
+            # Smooth ramp-up from stationary to anchor-drag window
+            return 0.85 * ((sog - self.config.speed_min_drag_knots) / (1.0 - self.config.speed_min_drag_knots))
+
         exponent = self.config.speed_steepness * (sog - self.config.speed_midpoint_knots)
-        # Numerical clamp to prevent float overflow
         exponent = max(-30.0, min(30.0, exponent))
         return 1.0 / (1.0 + math.exp(exponent))
 
     def _compute_loiter_score(
-        self, now_epoch: float, entered_corridor_epoch: Optional[float]
+        self, now_epoch: float, entered_corridor_epoch: Optional[float], sog: Optional[float] = None
     ) -> float:
         """Quantifies dwell time inside the cable alert corridor.
 
-        S_loiter = min(1.0, (t_now - t_enter) / tau_loiter)
+        GeoTrackNet (Nguyen et al. 2021) establishes that stationary dwell in port
+        is baseline traffic. Stationary vessels (sog <= 0.3 kn) do not score for loiter.
         """
         if entered_corridor_epoch is None:
+            return 0.0
+        if sog is not None and sog <= self.config.speed_min_drag_knots:
             return 0.0
         dwell_seconds = max(0.0, now_epoch - entered_corridor_epoch)
         return min(1.0, dwell_seconds / self.config.loiter_tau_seconds)
 
-    def _compute_heading_score(self, cog: float, cable_azimuth: float) -> float:
+    def _compute_heading_score(
+        self, cog: float, cable_azimuth: float, sog: Optional[float] = None
+    ) -> float:
         """Measures orientation between vessel course and cable segment azimuth.
 
-        S_heading = |cos(theta_cog - theta_cable)|
-        Vessels traveling parallel (0 deg / 180 deg) maximize seabed trench exposure.
+        Bakdi et al. (JMSE 2020): Stationary vessels (sog <= 0.5 kn) have no valid course vector.
         """
+        if sog is not None and sog <= 0.5:
+            return 0.0
         delta_rad = math.radians(cog - cable_azimuth)
         return abs(math.cos(delta_rad))
 
@@ -196,10 +239,11 @@ class ThreatScorer:
     ) -> float:
         """Mechanical Anchor Catch Signature.
 
-        Returns 1.0 if vessel is inside the 3 NM CPZ, current speed <= 1.5 kn,
-        and previous speed within the deceleration window (600s) was > 6.0 kn.
+        Returns 1.0 if vessel is inside the 3 NM CPZ, actively moving in the drag window
+        (0.3 kn < sog <= 1.5 kn), and previous speed within the deceleration window (600s) was > 6.0 kn.
+        Stationary vessels (sog <= 0.3 kn) stopping at berths return 0.0.
         """
-        if not in_cpz or sog > self.config.anchor_current_speed_max:
+        if not in_cpz or sog <= self.config.speed_min_drag_knots or sog > self.config.anchor_current_speed_max:
             return 0.0
 
         if not history:

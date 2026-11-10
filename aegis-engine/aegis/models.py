@@ -28,6 +28,7 @@ class CableProximity(BaseModel):
     cable_azimuth_deg: float = Field(..., description="Tangent orientation of closest cable segment [0, 180)")
     nearest_lon: float = Field(..., description="Longitude of closest point on cable")
     nearest_lat: float = Field(..., description="Latitude of closest point on cable")
+    is_landing_approach: bool = Field(False, description="Whether nearest point is within coastal landing approach of terminal")
 
 
 class CableIndexStats(BaseModel):
@@ -83,6 +84,7 @@ class ThreatAssessment(BaseModel):
     vessel_name: str = Field(..., description="Reported ship name")
     imo: Optional[str] = Field(None, description="International Maritime Organization number")
     ship_type: Optional[str] = Field(None, description="Vessel classification type")
+    nav_status: Optional[int] = Field(None, description="Reported AIS navigational status (e.g., 5=Moored, 1=At Anchor)")
     coordinates: Dict[str, float] = Field(..., description="Current position {'lat': y, 'lon': x}")
     sog_knots: float = Field(..., description="Speed Over Ground in knots")
     cog_degrees: float = Field(..., description="Course Over Ground in degrees")

@@ -75,6 +75,12 @@ export function ingestAisStreamEnvelope(envelope) {
     speed: normalizedSpeedOverGround(message.Sog ?? message.SOG),
     course: normalizedCourseOverGround(message.Cog ?? message.COG),
     heading: normalizedHeading(message.TrueHeading ?? message.Heading),
+    nav_status: numberValue(
+      message.NavigationalStatus ??
+        message.NavStatus ??
+        metadata.NavigationalStatus ??
+        metadata.NavStatus,
+    ),
     last_position_UTC: normalizeAisTimestamp(
       metadata.time_utc ?? metadata.TimeUtc,
     ),

@@ -114,6 +114,7 @@ class CableCorridorIndex:
                     "name": cable_name,
                     "color": color,
                     "segment_count": 0,
+                    "landing_points": [],
                 }
 
             geometry = feat.get("geometry", {})
@@ -128,6 +129,10 @@ class CableCorridorIndex:
                 lines = [coords_data]
 
             for line in lines:
+                if len(line) >= 2:
+                    cables_meta[cable_id]["landing_points"].append((float(line[0][0]), float(line[0][1])))
+                    cables_meta[cable_id]["landing_points"].append((float(line[-1][0]), float(line[-1][1])))
+
                 for i in range(len(line) - 1):
                     p1 = (float(line[i][0]), float(line[i][1]))
                     p2 = (float(line[i + 1][0]), float(line[i + 1][1]))
@@ -283,6 +288,16 @@ class CableCorridorIndex:
 
                 nearest_lat = lat + (closest_pt_on_geom.y / 60.0)
 
+                # Check whether nearest point on cable is near a coastal landing station
+                is_landing_approach = False
+                landing_pts = self._cable_metadata.get(cable_id, {}).get("landing_points", [])
+                for l_lon, l_lat in landing_pts:
+                    d_landing_x = (nearest_lon - l_lon) * cos_lat * 60.0
+                    d_landing_y = (nearest_lat - l_lat) * 60.0
+                    if math.hypot(d_landing_x, d_landing_y) <= settings.landing_approach_buffer_nm:
+                        is_landing_approach = True
+                        break
+
                 results.append(
                     CableProximity(
                         cable_id=cable_id,
@@ -295,6 +310,7 @@ class CableCorridorIndex:
                         cable_azimuth_deg=round(seg_azimuth, 2),
                         nearest_lon=round(nearest_lon, 6),
                         nearest_lat=round(nearest_lat, 6),
+                        is_landing_approach=is_landing_approach,
                     )
                 )
 

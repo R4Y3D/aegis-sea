@@ -261,3 +261,60 @@ def test_ghost_jump_failover_safety_mitigation(scorer):
     assert len(prefixes_legit) > 0
     assert len(backups_legit) > 0
 
+
+def test_docked_stationary_vessel_zero_false_alarm(scorer):
+    """Verifies that stationary/docked vessels (like ferry Prinsesse Benedikte) do not trigger false alarms."""
+    now = time.time()
+    # Vessel stationary at dock (SOG = 0.0 kn), directly above a cable corridor
+    assessment = scorer.score_vessel(
+        mmsi="219000001",
+        lat=60.05,
+        lon=25.02,
+        sog=0.0,
+        cog=0.0,
+        name="Prinsesse Benedikte Docked",
+        current_time_epoch=now,
+        entered_corridor_epoch=now - 7200.0,  # 2 hours docked at pier
+        last_seen_epoch=now,
+    )
+
+    # Kinematic factors must be zero for stationary vessel
+    assert assessment.score_breakdown.s_speed == 0.0
+    assert assessment.score_breakdown.s_loiter == 0.0
+    assert assessment.score_breakdown.s_heading == 0.0
+    assert assessment.score_breakdown.s_anchor == 0.0
+    # Rule B clamps stationary vessel score <= 25.0
+    assert assessment.threat_score <= 25.0
+    assert assessment.threat_level == ThreatLevel.NORMAL
+    assert assessment.recommended_action == "NONE"
+
+
+def test_moored_navstatus_suppression(scorer):
+    """Verifies that AIS NavStatus = 5 (Moored) suppresses alerts."""
+    now = time.time()
+    assessment = scorer.score_vessel(
+        mmsi="219000002",
+        lat=60.05,
+        lon=25.02,
+        sog=0.2,
+        cog=45.0,
+        nav_status=5,  # Moored
+        name="Moored Vessel",
+        current_time_epoch=now,
+        entered_corridor_epoch=now - 3600.0,
+    )
+    assert assessment.threat_score <= 20.0
+    assert assessment.threat_level == ThreatLevel.NORMAL
+
+
+def test_speed_bandpass_active_drag(scorer):
+    """Verifies empirical anchor-drag band-pass behavior (0 kn -> 0.0, 2 kn -> > 0.9, 8 kn -> < 0.1)."""
+    assert scorer._compute_speed_score(0.0) == 0.0
+    assert scorer._compute_speed_score(0.2) == 0.0
+    assert scorer._compute_speed_score(1.0) >= 0.8
+    assert scorer._compute_speed_score(2.0) >= 0.9
+    assert scorer._compute_speed_score(3.0) >= 0.75
+    assert scorer._compute_speed_score(6.0) < 0.2
+    assert scorer._compute_speed_score(12.0) < 0.01
+
+

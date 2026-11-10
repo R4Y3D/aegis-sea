@@ -29,6 +29,7 @@ class CachedVessel(BaseModel):
     name: str = "Unknown"
     imo: Optional[str] = None
     ship_type: Optional[str] = None
+    nav_status: Optional[int] = None
     lat: float
     lon: float
     sog: float
@@ -91,6 +92,7 @@ class AISPoller:
         name: str = "Unknown",
         imo: Optional[str] = None,
         ship_type: Optional[str] = None,
+        nav_status: Optional[int] = None,
         timestamp_epoch: Optional[float] = None,
     ) -> ThreatAssessment:
         """Ingests a single vessel telemetry fix, updates track buffer, and assesses threat."""
@@ -137,6 +139,7 @@ class AISPoller:
             current_time_epoch=now,
             entered_corridor_epoch=entered_corridor_epoch,
             last_seen_epoch=last_seen,
+            nav_status=nav_status,
         )
 
         # Append new point to historical ring buffer
@@ -156,6 +159,7 @@ class AISPoller:
             name=name,
             imo=imo,
             ship_type=ship_type,
+            nav_status=nav_status,
             lat=lat,
             lon=lon,
             sog=sog,
@@ -190,7 +194,14 @@ class AISPoller:
         candidates = []
         if self._working_url:
             candidates.append(self._working_url)
-        for base in [self.config.node_server_url, "http://localhost:4173", "http://127.0.0.1:4173", "http://[::1]:4173"]:
+        for base in [
+            self.config.node_server_url,
+            "http://localhost:4173",
+            "http://127.0.0.1:4173",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://[::1]:4173",
+        ]:
             cleaned = base.rstrip('/')
             if cleaned not in candidates:
                 candidates.append(cleaned)
@@ -225,6 +236,8 @@ class AISPoller:
                     name = row.get("name") or f"MMSI {mmsi}"
                     imo = str(row.get("imo") or "") or None
                     ship_type = row.get("type") or None
+                    nav_status_raw = row.get("nav_status")
+                    nav_status = int(nav_status_raw) if nav_status_raw is not None else None
                     epoch = float(row.get("last_position_epoch") or now)
 
                     self.ingest_vessel_telemetry(
@@ -237,6 +250,7 @@ class AISPoller:
                         name=name,
                         imo=imo,
                         ship_type=ship_type,
+                        nav_status=nav_status,
                         timestamp_epoch=epoch,
                     )
                     count += 1
@@ -272,7 +286,14 @@ class AISPoller:
         candidates = []
         if self._working_url:
             candidates.append(self._working_url)
-        for base in [self.config.node_server_url, "http://localhost:4173", "http://127.0.0.1:4173", "http://[::1]:4173"]:
+        for base in [
+            self.config.node_server_url,
+            "http://localhost:4173",
+            "http://127.0.0.1:4173",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "http://[::1]:4173",
+        ]:
             cleaned = base.rstrip('/')
             if cleaned not in candidates:
                 candidates.append(cleaned)
@@ -297,6 +318,8 @@ class AISPoller:
                                 name = row.get("name") or f"MMSI {mmsi_str}"
                                 imo = str(row.get("imo") or "") or None
                                 ship_type = row.get("type") or None
+                                nav_status_raw = row.get("nav_status")
+                                nav_status = int(nav_status_raw) if nav_status_raw is not None else None
                                 epoch = float(row.get("last_position_epoch") or now)
                                 return self.ingest_vessel_telemetry(
                                     mmsi=mmsi_str,
@@ -308,6 +331,7 @@ class AISPoller:
                                     name=name,
                                     imo=imo,
                                     ship_type=ship_type,
+                                    nav_status=nav_status,
                                     timestamp_epoch=epoch,
                                 )
                     return None

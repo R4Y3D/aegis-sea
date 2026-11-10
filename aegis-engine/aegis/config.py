@@ -31,6 +31,12 @@ class Settings(BaseSettings):
     # Speed factor parameters (Sigmoid logistic)
     speed_midpoint_knots: float = 4.0  # v_mid: Logistic inflection velocity
     speed_steepness: float = 1.2       # k_s: Logistic steepness
+    speed_min_drag_knots: float = 0.3  # v_min: Speeds <= 0.3 kn are stationary/moored (not dragging)
+
+    # Coastal Landing Approach & False Alarm Suppression
+    landing_approach_buffer_nm: float = 1.5  # Coastal harbor approach radius around cable landing points
+    landing_approach_decay: float = 0.5      # Proximity dampening in coastal harbor approaches
+    corroboration_required_for_critical: bool = True  # Requires active motion/drag corroboration for CRITICAL
 
     # Dwell & Blackout Horizons (Seconds)
     loiter_tau_seconds: float = 3600.0  # tau_loiter: 60 minutes
