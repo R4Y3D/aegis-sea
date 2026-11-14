@@ -7,27 +7,7 @@
 import { aegisThreatService } from '../services/aegisThreatService.js';
 
 export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
-  // Elements in floating HUD dock
-  const hudDock = document.getElementById('aegis-hud-dock');
-  const enginePill = document.getElementById('aegis-engine-pill');
-  const countCrit = document.getElementById('aegis-count-crit');
-  const countHigh = document.getElementById('aegis-count-high');
-  const countAdv = document.getElementById('aegis-count-adv');
-
-  const hudBtnAnchor = document.getElementById('aegis-sim-btn-anchor');
-  const hudBtnJump = document.getElementById('aegis-sim-btn-jump');
-  const hudBtnGhost = document.getElementById('aegis-sim-btn-ghost');
-  const hudToggleBtn = document.getElementById('aegis-hud-toggle-btn');
-  const hudDrawer = document.getElementById('aegis-hud-drawer');
-  const hudDrawerList = document.getElementById('aegis-drawer-list');
-  const toggleIcon = document.getElementById('aegis-toggle-icon');
-
-  // Simulation Controller Bar elements
-  const hudSimPlayBtn = document.getElementById('aegis-sim-play-btn');
-  const hudSimReplayBtn = document.getElementById('aegis-sim-replay-btn');
-  const hudSimProgress = document.getElementById('aegis-sim-progress');
-
-  // Elements in sidebar panel (if present)
+  // Elements in left sidebar panel
   const engineBadge = document.getElementById('aegis-engine-badge');
   const critCountEl = document.getElementById('aegis-crit-count');
   const highCountEl = document.getElementById('aegis-high-count');
@@ -39,16 +19,11 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
   const btnJump = document.getElementById('aegis-btn-sim-jump');
   const btnGhost = document.getElementById('aegis-btn-sim-ghost');
 
-  // Drawer toggle logic
-  let isDrawerOpen = false;
-  if (hudToggleBtn && hudDrawer) {
-    hudToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      isDrawerOpen = !isDrawerOpen;
-      hudDrawer.hidden = !isDrawerOpen;
-      if (toggleIcon) toggleIcon.textContent = isDrawerOpen ? '▲' : '▼';
-    });
-  }
+  // Sidebar Simulation Controller elements
+  const panelSimCtrl = document.getElementById('aegis-panel-sim-controller');
+  const panelSimPlayBtn = document.getElementById('aegis-panel-sim-play-btn');
+  const panelSimReplayBtn = document.getElementById('aegis-panel-sim-replay-btn');
+  const panelSimProgress = document.getElementById('aegis-panel-sim-progress');
 
   function renderThreatCards(threats, targetContainer) {
     if (!targetContainer) return;
@@ -107,22 +82,7 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
   }
 
   function updateOverview(overview, isOnline) {
-    // Update floating HUD pill
-    if (enginePill) {
-      if (isOnline) {
-        enginePill.textContent = '● ONLINE';
-        enginePill.className = 'aegis-pill online';
-      } else {
-        enginePill.textContent = '○ STANDBY';
-        enginePill.className = 'aegis-pill offline';
-      }
-    }
-
-    if (countCrit) countCrit.textContent = overview.threats_critical_count ?? 0;
-    if (countHigh) countHigh.textContent = overview.threats_high_count ?? 0;
-    if (countAdv) countAdv.textContent = overview.threats_advisory_count ?? 0;
-
-    // Update sidebar (if present)
+    // Update sidebar metrics and badge
     if (engineBadge) {
       if (isOnline) {
         engineBadge.textContent = '● ENGINE ONLINE';
@@ -248,12 +208,11 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
       aegisThreatService._notify();
     }
 
-    // Automatically reveal drawer and trigger cinematic simulation
+    // Automatically reveal sidebar controller and trigger cinematic simulation
     if (assessment) {
-      if (hudDrawer) {
-        hudDrawer.hidden = false;
-        isDrawerOpen = true;
-        if (toggleIcon) toggleIcon.textContent = '▲';
+      if (panelSimCtrl) {
+        panelSimCtrl.hidden = false;
+        window.dispatchEvent(new Event('resize'));
       }
       if (aegisLayer && typeof aegisLayer.startScenario === 'function') {
         aegisLayer.startScenario(type, assessment);
@@ -263,26 +222,21 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
     }
   }
 
-  // Bind HUD buttons
-  hudBtnAnchor?.addEventListener('click', () => triggerSimulation('anchor_drag'));
-  hudBtnJump?.addEventListener('click', () => triggerSimulation('gps_jump'));
-  hudBtnGhost?.addEventListener('click', () => triggerSimulation('ghost_decoy'));
-
-  // Bind Simulation Controller bar
-  hudSimPlayBtn?.addEventListener('click', () => {
+  // Bind Sidebar Simulation Controller bar (Left Panel)
+  panelSimPlayBtn?.addEventListener('click', () => {
     if (aegisLayer && typeof aegisLayer.togglePlay === 'function') {
       const isPlaying = aegisLayer.togglePlay();
-      hudSimPlayBtn.textContent = isPlaying ? '⏸' : '▶';
+      panelSimPlayBtn.textContent = isPlaying ? '⏸' : '▶';
     }
   });
 
-  hudSimReplayBtn?.addEventListener('click', () => {
+  panelSimReplayBtn?.addEventListener('click', () => {
     if (aegisLayer && typeof aegisLayer.replay === 'function') {
       aegisLayer.replay();
     }
   });
 
-  hudSimProgress?.addEventListener('input', (e) => {
+  panelSimProgress?.addEventListener('input', (e) => {
     if (aegisLayer && typeof aegisLayer.setSimulationTime === 'function') {
       const ratio = Number(e.target.value) / 100.0;
       const duration = aegisLayer.simState?.durationSec || 24.0;
@@ -298,7 +252,6 @@ export function initAegisThreatPanel({ onFlyToThreat, aegisLayer } = {}) {
   // Subscribe to service updates
   const unsubscribe = aegisThreatService.subscribe((state) => {
     updateOverview(state.overview, state.isEngineOnline);
-    renderThreatCards(state.threats, hudDrawerList);
     renderThreatCards(state.threats, threatListEl);
   });
 

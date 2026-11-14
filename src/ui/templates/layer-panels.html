@@ -70,6 +70,25 @@
             ▶ GHOST SHIP DECOY
           </button>
         </div>
+
+        <!-- Interactive Scenario Playback Controller (Left Panel) -->
+        <div id="aegis-panel-sim-controller" class="aegis-panel-sim-controller" hidden>
+          <div class="aegis-panel-sim-top">
+            <div class="aegis-sim-ctrl-left">
+              <button id="aegis-panel-sim-play-btn" class="aegis-ctrl-icon-btn" title="Pause or Resume Scenario Playback">⏸</button>
+              <button id="aegis-panel-sim-replay-btn" class="aegis-ctrl-icon-btn" title="Restart Scenario Animation">↺</button>
+              <span id="aegis-panel-sim-stage-badge" class="aegis-stage-badge">STAGE 1: APPROACH</span>
+            </div>
+          </div>
+          <div class="aegis-panel-sim-scrubber-row">
+            <input type="range" id="aegis-panel-sim-progress" min="0" max="100" value="0" step="0.5" class="aegis-sim-slider" title="Scrub simulation timeline">
+            <span id="aegis-panel-sim-time-text" class="aegis-sim-time">00:00 / 00:24</span>
+          </div>
+          <div class="aegis-panel-sim-telemetry-row">
+            <span id="aegis-panel-sim-live-sog" class="aegis-sim-telemetry-sog">Speed: 10.5 kn</span>
+            <span id="aegis-panel-sim-live-score" class="score-pill">Score: 22.0</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

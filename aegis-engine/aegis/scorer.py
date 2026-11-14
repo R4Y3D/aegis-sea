@@ -47,7 +47,14 @@ class ThreatScorer:
         now = current_time_epoch or datetime.now(timezone.utc).timestamp()
         last_seen = last_seen_epoch or now
 
-        # Step 1: Telemetry Trust Layer (Adversarial Spoofing & Jump Filter)
+        # Step 1: Spatial Query against Subsea Cable Corridor
+        closest_cable = self.cable_index.get_closest_cable(
+            lat=lat,
+            lon=lon,
+            max_distance_nm=self.config.alert_horizon_nm,
+        )
+
+        # Step 2: Telemetry Trust Layer (Adversarial Spoofing & Jump Filter)
         trust = self._evaluate_telemetry_trust(
             current_lat=lat,
             current_lon=lon,
@@ -55,13 +62,7 @@ class ThreatScorer:
             current_epoch=now,
             last_seen_epoch=last_seen,
             history=history or [],
-        )
-
-        # Step 2: Spatial Query against Subsea Cable Corridor
-        closest_cable = self.cable_index.get_closest_cable(
-            lat=lat,
-            lon=lon,
-            max_distance_nm=self.config.alert_horizon_nm,
+            closest_cable=closest_cable,
         )
 
         # If beyond the 9 NM alert horizon, vessel is outside all danger zones
@@ -281,6 +282,7 @@ class ThreatScorer:
         current_epoch: float,
         last_seen_epoch: float,
         history: List[VesselTrackPoint],
+        closest_cable: Optional[CableProximity] = None,
     ) -> TelemetryTrust:
         """Applies kinematic validation filters to detect spoofing or ghost ships."""
         trust = TelemetryTrust()
@@ -313,9 +315,11 @@ class ThreatScorer:
                     trust.is_jump = True
                     trust.trust_score = 0.3  # Severely penalize telemetry credibility
 
-        # Ghost Ship Decoy Check: Newly seen contact popping up with 0 prior history
-        # already inside dragging speed bounds
-        if len(history) < self.config.ghost_track_min_samples and current_sog <= 3.5:
+        # Ghost Ship Decoy Check: A synthetic target popping up with 0 prior history
+        # already inside dragging speed bounds specifically INSIDE A CABLE PROTECTION ZONE (CPZ).
+        # Normal vessels in open ocean or outside the CPZ must never be flagged as cable decoys.
+        in_cpz = closest_cable is not None and getattr(closest_cable, "in_cpz", False)
+        if in_cpz and len(history) < self.config.ghost_track_min_samples and current_sog <= 3.5:
             trust.is_ghost_candidate = True
 
         return trust

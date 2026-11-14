@@ -762,38 +762,38 @@ export function createAegisThreatLayer(viewer) {
   });
 
   function updateSimulationControllerUI() {
-    const ctrl = document.getElementById('aegis-sim-controller');
-    if (!ctrl || !simState.activeArchetype) return;
+    const panelCtrl = document.getElementById('aegis-panel-sim-controller');
+    if (!simState.activeArchetype) {
+      if (panelCtrl) panelCtrl.hidden = true;
+      return;
+    }
 
-    ctrl.hidden = false;
-
-    const progressEl = document.getElementById('aegis-sim-progress');
-    const timeTextEl = document.getElementById('aegis-sim-time-text');
-    const stageBadgeEl = document.getElementById('aegis-sim-stage-badge');
-    const liveSogEl = document.getElementById('aegis-sim-live-sog');
-    const liveScoreEl = document.getElementById('aegis-sim-live-score');
-    const playBtn = document.getElementById('aegis-sim-play-btn');
+    if (panelCtrl) panelCtrl.hidden = false;
 
     const duration = simState.durationSec || 24.0;
-    if (progressEl) {
-      const ratio = (simState.elapsedSec / duration) * 100;
-      progressEl.value = ratio.toFixed(1);
-    }
-    if (timeTextEl) {
-      const curSec = Math.floor(simState.elapsedSec);
-      const totalSec = Math.floor(duration);
-      timeTextEl.textContent = `00:${curSec.toString().padStart(2, '0')} / 00:${totalSec.toString().padStart(2, '0')}`;
-    }
-    if (liveSogEl) {
-      liveSogEl.textContent = `${calculatedPos.sog.toFixed(1)} kn`;
-    }
+    const ratio = ((simState.elapsedSec / duration) * 100).toFixed(1);
+    const curSec = Math.floor(simState.elapsedSec);
+    const totalSec = Math.floor(duration);
+    const timeStr = `00:${curSec.toString().padStart(2, '0')} / 00:${totalSec.toString().padStart(2, '0')}`;
+    const sogStr = `Speed: ${calculatedPos.sog.toFixed(1)} kn`;
+    const scoreStr = `Score: ${calculatedPos.score.toFixed(1)}`;
+    const playIcon = simState.isPlaying ? '⏸' : '▶';
+
+    const progressEl = document.getElementById('aegis-panel-sim-progress');
+    const timeTextEl = document.getElementById('aegis-panel-sim-time-text');
+    const stageBadgeEl = document.getElementById('aegis-panel-sim-stage-badge');
+    const liveSogEl = document.getElementById('aegis-panel-sim-live-sog');
+    const liveScoreEl = document.getElementById('aegis-panel-sim-live-score');
+    const playBtn = document.getElementById('aegis-panel-sim-play-btn');
+
+    if (progressEl) progressEl.value = ratio;
+    if (timeTextEl) timeTextEl.textContent = timeStr;
+    if (liveSogEl) liveSogEl.textContent = sogStr;
     if (liveScoreEl) {
-      liveScoreEl.textContent = `Score: ${calculatedPos.score.toFixed(1)}`;
+      liveScoreEl.textContent = scoreStr;
       liveScoreEl.style.color = calculatedPos.stageColor;
     }
-    if (playBtn) {
-      playBtn.textContent = simState.isPlaying ? '⏸' : '▶';
-    }
+    if (playBtn) playBtn.textContent = playIcon;
     if (stageBadgeEl) {
       stageBadgeEl.textContent = calculatedPos.stageBadge;
       stageBadgeEl.className = `aegis-stage-badge ${calculatedPos.badgeClass}`;

@@ -154,6 +154,18 @@ export function createCards({
       } else if (threat.threat_level === 'NORMAL' && threat.closest_cable && threat.closest_cable.in_cpz) {
         details.push(`Transit: Normal Speed (${Number(record.speed || 0).toFixed(1)} kn)`);
       }
+
+      if (threat.telemetry_trust) {
+        if (threat.telemetry_trust.is_jump) {
+          details.push(`⚡ Telemetry: SPOOFED JUMP (${Number(threat.telemetry_trust.implied_speed_knots || 0).toFixed(1)} kn)`);
+        } else if (threat.telemetry_trust.is_ghost_candidate && threat.closest_cable?.in_alert_corridor) {
+          details.push('👻 Telemetry: PHANTOM GHOST DECOY');
+        } else if (threat.telemetry_trust.is_dark) {
+          details.push('⚠️ Telemetry: AIS SILENCE / DARK');
+        } else if (threat.closest_cable?.in_alert_corridor || threat.threat_level !== 'NORMAL') {
+          details.push('✓ Telemetry: Verified (AIS)');
+        }
+      }
     }
 
     return {

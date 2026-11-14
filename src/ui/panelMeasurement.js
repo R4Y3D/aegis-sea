@@ -20,20 +20,28 @@ export function measurePanelNaturalHeight(panel, getComputedStyle) {
   const paddingBottom = parseFloat(innerStyle.paddingBottom) || 0;
   let contentBottom = parseFloat(innerStyle.paddingTop) || 0;
 
-  for (const child of inner.children) {
-    const childStyle = getComputedStyle(child);
-    if (childStyle.display === 'none' || childStyle.visibility === 'hidden')
-      continue;
-    const childRect = child.getBoundingClientRect();
-    const marginBottom = parseFloat(childStyle.marginBottom) || 0;
-    const naturalChildHeight = Math.max(
-      childRect.height,
-      child.scrollHeight || 0,
-    );
-    const childBottom =
-      childRect.top - innerRect.top + naturalChildHeight + marginBottom;
-    contentBottom = Math.max(contentBottom, childBottom);
-  }
+  const inspectNodes = (nodes) => {
+    for (const child of nodes || []) {
+      const childStyle = getComputedStyle(child);
+      if (childStyle.display === 'none' || childStyle.visibility === 'hidden')
+        continue;
+      if (childStyle.display === 'contents') {
+        inspectNodes(child.children);
+        continue;
+      }
+      const childRect = child.getBoundingClientRect();
+      const marginBottom = parseFloat(childStyle.marginBottom) || 0;
+      const naturalChildHeight = Math.max(
+        childRect.height,
+        child.scrollHeight || 0,
+      );
+      const childBottom =
+        childRect.top - innerRect.top + naturalChildHeight + marginBottom;
+      contentBottom = Math.max(contentBottom, childBottom);
+    }
+  };
+
+  inspectNodes(inner.children);
 
   const wrapperChrome =
     (parseFloat(panelStyle.borderTopWidth) || 0) +

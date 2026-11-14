@@ -425,6 +425,31 @@ test('natural height includes visible content, margins and wrapper chrome, exclu
   );
 });
 
+test('natural height descends into children of display: contents containers', () => {
+  const panel = element('panel', { top: 100, height: 100 });
+  const inner = element('inner', { top: 100 });
+  inner.computed.paddingTop = '10px';
+  inner.computed.paddingBottom = '5px';
+  const header = element('header', { top: 110, height: 30 });
+  header.scrollHeight = 30;
+  const contentsBody = element('cyber-panel-body', { top: 0, height: 0 });
+  contentsBody.scrollHeight = 0;
+  contentsBody.computed.display = 'contents';
+  const card1 = element('card1', { top: 140, height: 50 });
+  card1.scrollHeight = 50;
+  const card2 = element('card2', { top: 195, height: 60 });
+  card2.scrollHeight = 60;
+  contentsBody.children = [card1, card2];
+  panel.computed.borderTopWidth = '1px';
+  panel.computed.borderBottomWidth = '1px';
+  panel.children = [inner];
+  inner.children = [header, contentsBody];
+  assert.equal(
+    measurePanelNaturalHeight(panel, (node) => node.computed),
+    162,
+  );
+});
+
 // Reproduce the allocation-dependent readings seen beside the weather card.
 // Outside measurement, CCTV is 391 px in focus and 629 px in normal mode;
 // Removing only the allocation leaves focus CSS active: its next reading is

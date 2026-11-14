@@ -206,3 +206,66 @@ async def clear_dispatch_history():
     dispatcher: AlertDispatcher = app.state.dispatcher
     dispatcher.clear_history()
     return {"status": "cleared", "history_count": 0}
+
+
+@app.get("/api/benchmarks/novelty", tags=["Research Benchmarks"])
+async def run_novelty_benchmark(sample_count: int = Query(600, ge=50, le=2000)):
+    """Executes the empirical novelty benchmark comparing Aegis-Sea against Naive Geofencing and Kinematic ML."""
+    from aegis.benchmark import NoveltyBenchmarkRunner
+    runner = NoveltyBenchmarkRunner(cable_index=app.state.cable_index)
+    scale = sample_count / 1200.0
+    fleet = runner.dataset_gen.generate_fleet(
+        n_benign_cruising=max(10, int(600 * scale)),
+        n_benign_harbor_tugs=max(5, int(150 * scale)),
+        n_benign_fishing=max(5, int(150 * scale)),
+        n_genuine_sabotage=max(5, int(100 * scale)),
+        n_spoof_gps_jump=max(5, int(100 * scale)),
+        n_spoof_slow_drift=max(2, int(50 * scale)),
+        n_ghost_swarms=max(2, int(50 * scale)),
+    )
+    metrics = runner.run_benchmark(dataset=fleet)
+    markdown_table = runner.generate_markdown_table(metrics)
+    return {
+        "total_evaluated": len(fleet),
+        "markdown_table": markdown_table,
+        "metrics": {k: v.__dict__ for k, v in metrics.items()},
+    }
+
+
+@app.get("/api/simulation/bgp-convergence", tags=["Cyber-Physical Simulation"])
+async def run_bgp_convergence_simulation():
+    """Simulates reactive optical loss-of-light versus Aegis pre-emptive BGP graceful evacuation."""
+    from aegis.network_sim import BGPConvergenceSimulator
+    sim = BGPConvergenceSimulator()
+    return sim.generate_comparison_summary()
+
+
+@app.get("/api/game-theory/equilibrium", tags=["Game Theory"])
+async def get_game_theory_equilibrium():
+    """Solves the leader-follower Stackelberg game for optimal defense thresholds."""
+    from aegis.game_theory import StackelbergSecurityGame
+    game = StackelbergSecurityGame()
+    se = game.solve_stackelberg_equilibrium()
+    curves = game.generate_curves(n_points=60)
+    return {
+        "equilibrium": se.__dict__,
+        "curves": curves,
+    }
+
+
+@app.get("/api/otdr/trace", tags=["Optical Sensing"])
+async def get_otdr_trace(
+    cable_id: str = Query("c-lion1", description="Subsea cable ID slug"),
+    snag_km: Optional[float] = Query(142.5, description="Optical strain distance in km (or None for nominal)"),
+    attenuation_db: float = Query(4.8, description="Localized attenuation drop in dB"),
+    is_break: bool = Query(False, description="Simulate complete severed fiber break"),
+):
+    """Generates an Optical Time-Domain Reflectometry (OTDR) backscatter power trace."""
+    from aegis.otdr_fusion import OTDRTelemetrySimulator
+    sim = OTDRTelemetrySimulator(cable_index=app.state.cable_index)
+    return sim.generate_trace(
+        cable_id=cable_id,
+        snag_location_km=snag_km,
+        snag_attenuation_db=attenuation_db,
+        is_break=is_break,
+    )

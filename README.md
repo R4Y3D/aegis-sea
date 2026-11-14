@@ -180,8 +180,8 @@ flowchart LR
 | **Phase 0** | **Oct 10 – Oct 17** | ✅ **Complete** | Environment setup, R-tree cable indexing (`shapely`/`rtree`), literature review | **Related Work (Oct 17)** |
 | **Phase 1** | **Oct 18 – Oct 26** | ✅ **Complete** | Formalize Attacker Model, build Telemetry Trust Layer & scoring engine in `aegis-engine` | *Core Engine Verification* |
 | **Phase 2** | **Oct 27 – Nov 09** | ✅ **Complete** | Adversarial **Red Team Simulation Testbed**, 3D visual threat layer, and automated BGP evacuation dispatcher | **Progress Report (Oct 31)** |
-| **Phase 3** | **Nov 10 – Dec 02** | ⏳ Upcoming | Benchmark **Naive Detectors vs. Aegis-Sea Trust-Aware Detector** under spoofing; Research Paper | **Draft Report (Dec 03)** |
-| **Phase 4** | **Dec 03 – Dec 05** | ⏳ Upcoming | High-definition screencast demo video, defense slide deck | **Final Presentation (Dec 05)** |
+| **Phase 3** | **Nov 10 – Dec 02** | ✅ **Complete** | Benchmark **Naive Detectors vs. Aegis-Sea Trust-Aware Detector** under spoofing; Research Paper | **Draft Report (Dec 03)** |
+| **Phase 4** | **Dec 03 – Dec 05** | 🟡 **In Progress** | High-definition screencast demo video, defense slide deck | **Final Presentation (Dec 05)** |
 
 ### Phase 0: Scaffolding & Geospatial Indexing `Oct 10 – Oct 17`
 - [x] Establish and verify local God's Eye View runtime (Node.js 24 LTS + Vite + Cesium).
@@ -208,13 +208,16 @@ flowchart LR
 - [x] Implement `AlertDispatcher` with SOAR JSON webhook emission and pre-computed BGP evacuation payloads (`aegis.dispatcher`).
 - [ ] Complete and submit the **Progress Report** (due Oct 31).
 
-### Phase 3: Resilient Benchmarking & Research Paper Authoring `Nov 10 – Dec 3`
-- [ ] Benchmark **Naive Detectors** (pure distance/speed geofencing) vs. **Aegis-Sea Trust-Aware Detector** under red-team spoofing attacks.
-- [ ] Generate empirical performance charts, ROC curves, and false-alarm suppression metrics.
-- [ ] Author the complete research paper documenting the cyber-physical defense architecture.
-- [ ] Submit final **Draft Report** (due Dec 3).
+### Phase 3: Resilient Benchmarking & Research Paper Authoring `Nov 10 – Dec 3` *(Complete)*
+- [x] Benchmark **Naive Detectors** (pure distance/speed geofencing) and **Kinematic ML Anomaly Detectors** vs. **Aegis-Sea Trust-Aware Detector** across 1,200 labeled trajectories (`aegis/benchmark.py`).
+- [x] Generate empirical performance charts, ROC curves, and false-alarm suppression metrics (`presentation_assets/figure_*.png`).
+- [x] Formulate Stackelberg game-theoretic security model solving optimal equilibrium threshold $\theta^* = 67.5$ (`aegis/game_theory.py`).
+- [x] Model cyber-physical network convergence proving 123.9 GB packet loss eliminated via 450 ms pre-emptive BGP evacuation (`aegis/network_sim.py`).
+- [x] Implement optical OTDR backscatter Rayleigh strain sensor fusion for dual-layer physical attribution (`aegis/otdr_fusion.py`).
+- [x] Author the complete IEEE conference research paper draft (`PAPERS/Aegis_Sea_IEEE_Conference_Paper.md`).
+- [x] Update experimental simulation results report (`docs/SIMULATION_RESULTS.md`).
 
-### Phase 4: Final Demonstration & Presentation `Dec 3 – Dec 5`
+### Phase 4: Final Demonstration & Presentation `Dec 3 – Dec 5` *(Active)*
 - [ ] Record a high-definition screencast demonstrating an anchor-drag and telemetry spoofing attack triggering proactive SDN rerouting.
 - [ ] Prepare slide presentation covering threat landscape, architecture, model, and metrics.
 - [ ] Deliver **Final Capstone Defense & Presentation** (Dec 5).

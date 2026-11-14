@@ -1,13 +1,17 @@
-/* ── Scene Director Panel ───────────────────── */
+/* ── Scene Director & Aegis Defense Panels ── */
+#aegis-panel,
 #scene-panel {
   --panel-expanded-width: 360px;
+  width: var(--panel-expanded-width);
+}
+
+#scene-panel {
   position: fixed;
   top: calc(var(--left-stack-top) + (var(--left-stack-gap) * 2));
   left: var(--left-stack-x);
   right: auto;
   bottom: auto;
   z-index: 100;
-  width: var(--panel-expanded-width);
   max-height: calc(100vh - 24px);
 }
 
@@ -91,6 +95,7 @@
 #left-panel-stack > #aegis-panel:not(.collapsed) .aegis-panel-inner,
 #left-panel-stack > #scene-panel:not(.collapsed) .scene-panel-inner {
   overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-gutter: stable;
 }
 
